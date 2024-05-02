@@ -29,14 +29,6 @@ Be sure to install [Scala and Spark](#scala-and-spark)
 ```console
 $ python -m pip install "woodwork[complete]"
 ```
-```{tab} Dask
-```console
-$ python -m pip install "woodwork[dask]"
-```
-```{tab} Spark
-```console
-$ python -m pip install "woodwork[spark]"
-```
 ```{tab} Update Checker
 ```console
 $ python -m pip install "woodwork[updater]"
@@ -45,23 +37,13 @@ $ python -m pip install "woodwork[updater]"
 ````{tab} Conda
 ```{tab} All Add-ons
 ```console
-$ conda install -c conda-forge dask pyspark alteryx-open-src-update-checker
-```
-```{tab} Dask
-```console
-$ conda install -c conda-forge dask
-```
-```{tab} Spark
-```console
-$ conda install -c conda-forge pyspark
+$ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ```{tab} Update Checker
 ```console
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
-- **Dask**: Use Woodwork with Dask DataFrames
-- **Spark**: Use Woodwork with Spark DataFrames
 - **Update Checker**: Receive automatic notifications of new Woodwork releases
 
 ## Source
@@ -138,8 +120,6 @@ Woodwork has several other Python dependencies that are used only for specific m
 | boto3             | 1.34.32     | Required to read/write to URLs and S3  |
 | smart_open        | 5.0.0       | Required to read/write to URLs and S3  |
 | pyarrow           | 15.0.0      | Required to serialize to parquet       |
-| dask[distributed] | 2024.1.0    | Required to use with Dask DataFrames   |
-| pyspark           | 3.5.0       | Required to use with Spark DataFrames  |
 
 
 # Development

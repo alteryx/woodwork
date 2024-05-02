@@ -1,4 +1,3 @@
-import re
 import warnings
 from datetime import datetime
 from typing import Optional
@@ -9,7 +8,6 @@ from pandas import CategoricalDtype
 from pandas.api import types as pdtypes
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -23,12 +21,7 @@ from woodwork.utils import (
     _is_valid_latlong_value,
     _reformat_to_latlong,
     camel_to_snake,
-    import_or_none,
 )
-
-dd = import_or_none("dask.dataframe")
-dask_expr = import_or_none("dask_expr")
-ps = import_or_none("pyspark.pandas")
 
 
 class ClassNameDescriptor(object):
@@ -48,7 +41,6 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
 
     type_string = ClassNameDescriptor()
     primary_dtype = "string"
-    pyspark_dtype = None
     standard_tags = set()
 
     def __eq__(self, other, deep=False):
@@ -62,10 +54,7 @@ class LogicalType(object, metaclass=LogicalTypeMetaClass):
     @classmethod
     def _get_valid_dtype(cls, series_type):
         """Return the dtype that is considered valid for a series with the given logical_type"""
-        if ps and series_type == ps.Series and cls.pyspark_dtype:
-            return cls.pyspark_dtype
-        else:
-            return cls.primary_dtype
+        return cls.primary_dtype
 
     def transform(self, series, null_invalid_values=False):
         """Converts the series dtype to match the logical type's if it is different."""
@@ -228,11 +217,8 @@ class Boolean(LogicalType):
         ve = ValueError(
             "Expected no null values in this Boolean column. If you want to keep the nulls, use BooleanNullable type. Otherwise, cast these nulls to a boolean value with the `cast_null_as` parameter.",
         )
-        is_dask = _is_dask_series(series)
         if not pdtypes.is_dtype_equal("bool", series.dtype):
-            if (is_dask and series.isna().any().compute()) or (
-                not is_dask and series.isna().any()
-            ):
+            if series.isna().any():
                 if self.cast_nulls_as is None:
                     raise ve
                 series.fillna(self.cast_nulls_as, inplace=True)
@@ -272,7 +258,6 @@ class Categorical(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, encoding=None):
@@ -293,7 +278,6 @@ class CountryCode(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -308,7 +292,6 @@ class CurrencyCode(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -358,52 +341,31 @@ class Datetime(LogicalType):
                 series,
             )
             utc = self.datetime_format and self.datetime_format.endswith("%z")
-            if _is_dask_series(series):
-                name = series.name
-                series = dd.to_datetime(
+
+            try:
+                series = pd.to_datetime(
+                    series,
+                    format=self.datetime_format,
+                    utc=utc,
+                )
+            except (TypeError, ValueError):
+                warnings.warn(
+                    f"Some rows in series '{series.name}' are incompatible with datetime format "
+                    f"'{self.datetime_format}' and have been replaced with null values. You may be "
+                    "able to fix this by using an instantiated Datetime logical type with a different format "
+                    "string specified for this column during Woodwork initialization.",
+                    TypeConversionWarning,
+                )
+                series = pd.to_datetime(
                     series,
                     format=self.datetime_format,
                     errors="coerce",
                     utc=utc,
                 )
-                series.name = name
-            elif _is_spark_series(series):
-                series = ps.Series(
-                    ps.to_datetime(
-                        series.to_numpy(),
-                        format=self.datetime_format,
-                        errors="coerce",
-                    ),
-                    name=series.name,
-                )
-            else:
-                try:
-                    series = pd.to_datetime(
-                        series,
-                        format=self.datetime_format,
-                        utc=utc,
-                    )
-                except (TypeError, ValueError):
-                    warnings.warn(
-                        f"Some rows in series '{series.name}' are incompatible with datetime format "
-                        f"'{self.datetime_format}' and have been replaced with null values. You may be "
-                        "able to fix this by using an instantiated Datetime logical type with a different format "
-                        "string specified for this column during Woodwork initialization.",
-                        TypeConversionWarning,
-                    )
-                    series = pd.to_datetime(
-                        series,
-                        format=self.datetime_format,
-                        errors="coerce",
-                        utc=utc,
-                    )
 
         series = self._remove_timezone(series)
         if self.datetime_format is not None and "%y" in self.datetime_format:
-            if _is_spark_series(series):
-                series = series.transform(_year_filter)
-            else:
-                series = series.apply(_year_filter)
+            series = series.apply(_year_filter)
         return super().transform(series)
 
 
@@ -558,8 +520,7 @@ class LatLong(LogicalType):
 
     Note:
         LatLong values will be stored with the object dtype as a
-        tuple of floats (or a list of floats for Spark DataFrames)
-        and must contain only two values.
+        tuple of floats and must contain only two values.
 
         Null latitude or longitude values will be stored as np.nan, and
         a fully null LatLong (np.nan, np.nan) will be stored as just a
@@ -576,22 +537,10 @@ class LatLong(LogicalType):
     primary_dtype = "object"
 
     def transform(self, series, null_invalid_values=False):
-        """Formats a series to be a tuple (or list for Spark) of two floats."""
+        """Formats a series to be a tuple of two floats."""
         if null_invalid_values:
             series = _coerce_latlong(series)
-
-        if _is_dask_series(series):
-            name = series.name
-            meta = (name, tuple([float, float]))
-            series = series.apply(_reformat_to_latlong, meta=meta)
-        elif _is_spark_series(series):
-            formatted_series = series.to_pandas().apply(
-                _reformat_to_latlong,
-                is_spark=True,
-            )
-            series = ps.from_pandas(formatted_series)
-        else:
-            series = series.apply(_reformat_to_latlong)
+        series = series.apply(_reformat_to_latlong)
 
         return super().transform(series)
 
@@ -653,7 +602,6 @@ class Ordinal(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def __init__(self, order=None):
@@ -743,7 +691,6 @@ class SubRegionCode(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
 
@@ -806,7 +753,6 @@ class PostalCode(LogicalType):
     """
 
     primary_dtype = "category"
-    pyspark_dtype = "string"
     standard_tags = {"category"}
 
     def transform(self, series, null_invalid_values=False):
@@ -831,8 +777,6 @@ class PostalCode(LogicalType):
         Returns:
             Series: If return_invalid_values is True, returns invalid PostalCodes.
         """
-        if _is_dask_series(series):
-            series = series.compute()
         return _regex_validate(
             "postal_code_inference_regex",
             series,
@@ -869,8 +813,6 @@ def _regex_validate(regex_key, series, return_invalid_values):
 
     else:
         any_invalid = invalid.any()
-        if dd and isinstance(any_invalid, (dd.core.Scalar, dask_expr.Scalar)):
-            any_invalid = any_invalid.compute()
 
         if any_invalid:
             type_string = {
@@ -896,8 +838,7 @@ def _replace_nans(series: pd.Series, primary_dtype: Optional[str] = None) -> pd.
     if str(original_dtype) == "string":
         series = series.replace(ww.config.get_option("nan_values"), pd.NA)
         return series
-    if not _is_spark_series(series):
-        series = series.replace(ww.config.get_option("nan_values"), np.nan)
+    series = series.replace(ww.config.get_option("nan_values"), np.nan)
     if str(original_dtype) == "boolean":
         series = series.astype(original_dtype)
 
@@ -912,8 +853,6 @@ def _validate_age(series, return_invalid_values):
 
     else:
         any_invalid = invalid.any()
-        if dd and isinstance(any_invalid, (dd.core.Scalar, dask_expr.Scalar)):
-            any_invalid = any_invalid.compute()
 
         if any_invalid:
             info = f"Series {series.name} contains negative values."
@@ -926,17 +865,7 @@ def _get_index_invalid_integer(series):
 
 def _get_index_invalid_string(series, regex_key):
     regex = config.get_option(regex_key)
-
-    if _is_spark_series(series):
-
-        def match(x):
-            if isinstance(x, str):
-                return bool(re.match(regex, x))
-
-        return series.apply(match).astype("boolean") == False  # noqa: E712
-
-    else:
-        return ~series.str.match(regex).astype("boolean")
+    return ~series.str.match(regex).astype("boolean")
 
 
 def _get_index_invalid_age(series):

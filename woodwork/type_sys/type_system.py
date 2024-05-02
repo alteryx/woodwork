@@ -1,8 +1,5 @@
 from typing import Callable
 
-import pandas as pd
-
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
 from woodwork.logical_types import (
     URL,
     Address,
@@ -353,38 +350,12 @@ class TypeSystem(object):
             "replace": False,
             "random_state": 42,
         }
-        if isinstance(series, pd.Series):
-            # Special case for series with no valid values
-            if series.count() == 0:
-                return Unknown()
-            kw_args_sampling["n"] = INFERENCE_SAMPLE_SIZE
-            series = get_random_sample(series, **kw_args_sampling)
-        else:
-            # Dask and Spark don't accept the n argument
 
-            # prevent division by zero error
-            series_len = len(series)
-            if not series_len:
-                return Unknown()
-            kw_args_sampling["frac"] = INFERENCE_SAMPLE_SIZE / series_len
-            if _is_dask_series(series):
-                series = get_random_sample(
-                    series.head(series_len, npartitions=-1),
-                    **kw_args_sampling,
-                )
-            elif _is_spark_series(series):
-                series = get_random_sample(series, **kw_args_sampling)
-                series = series.to_pandas()
-            else:
-                raise ValueError(
-                    f"Unsupported series type `{type(series)}`",
-                )  # pragma: no cover
-
-            # For dask or spark collections, unknown type special case comes
-            # *after* head calls to avoid evaluating a potentially large
-            # dataset
-            if series.count() == 0:
-                return Unknown()
+        # Special case for series with no valid values
+        if series.count() == 0:
+            return Unknown()
+        kw_args_sampling["n"] = INFERENCE_SAMPLE_SIZE
+        series = get_random_sample(series, **kw_args_sampling)
 
         def get_inference_matches(types_to_check, series, type_matches=[]):
             # Since NaturalLanguage isn't inferred by default, make sure to check

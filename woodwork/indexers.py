@@ -1,8 +1,6 @@
 import copy
 
 from woodwork.accessor_utils import (
-    _is_dask_dataframe,
-    _is_dask_series,
     _is_dataframe,
     _is_series,
 )
@@ -11,10 +9,6 @@ from woodwork.accessor_utils import (
 class _iLocIndexer:
     def __init__(self, data):
         self.data = data
-        if _is_dask_dataframe(data):
-            raise TypeError("iloc is not supported for Dask DataFrames")
-        elif _is_dask_series(data):
-            raise TypeError("iloc is not supported for Dask Series")
 
     def __getitem__(self, key):
         selection = self.data.iloc[key]
@@ -32,11 +26,7 @@ class _locIndexer:
 
 def _process_selection(selection, original_data):
     if _is_series(selection):
-        if _is_dask_series(selection):
-            # Dask index values are a delayed object - can't compare below without computing
-            index_vals = selection.index.values.compute()
-        else:
-            index_vals = selection.index.values
+        index_vals = selection.index.values
         if _is_dataframe(original_data) and set(index_vals) == set(
             original_data.columns,
         ):

@@ -55,9 +55,6 @@ from woodwork.utils import (
     import_or_raise,
 )
 
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
-
 
 def test_camel_to_snake():
     test_items = {
@@ -556,12 +553,6 @@ def test_infer_datetime_format_all_null():
 
     for pd_series in missing_data:
         assert _infer_datetime_format(pd_series) is None
-        if dd:
-            dd_series = dd.from_pandas(pd_series, npartitions=2)
-            assert _infer_datetime_format(dd_series) is None
-        if ps:
-            ks_series = ps.from_pandas(pd_series)
-            assert _infer_datetime_format(ks_series) is None
 
 
 def test_is_categorical() -> None:
@@ -654,17 +645,6 @@ def test_concat_dataframe_or_series_with_series():
         pandas_series,
     )
 
-    if dd:
-        dask_series = dd.from_pandas(pandas_series, npartitions=1)
-        assert len(concat_dataframe_or_series(dask_series, dask_series)) == 2 * len(
-            dask_series,
-        )
-    if ps:
-        spark_series = ps.Series(data=[1, 2, 3])
-        assert len(concat_dataframe_or_series(spark_series, spark_series)) == 2 * len(
-            spark_series,
-        )
-
 
 def test_concat_dataframe_or_series_with_series_with_dataframe():
     """Tests whether dataframes are correctly concatenated"""
@@ -674,17 +654,6 @@ def test_concat_dataframe_or_series_with_series_with_dataframe():
     assert len(concat_dataframe_or_series(df, df)) == 2 * len(
         df,
     )
-
-    if dd:
-        dask_df = dd.from_pandas(df, npartitions=1)
-        assert len(concat_dataframe_or_series(dask_df, dask_df)) == 2 * len(
-            dask_df,
-        )
-    if ps:
-        spark_df = ps.from_pandas(df)
-        assert len(concat_dataframe_or_series(spark_df, spark_df)) == 2 * len(
-            spark_df,
-        )
 
 
 def tests_concat_dataframe_or_series_concatenates_in_correct_order():

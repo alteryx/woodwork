@@ -6,12 +6,12 @@ on:
     branches:
       - main
 jobs:
-  py38_unit_tests_minimum_dependencies:
+  py39_unit_tests_minimum_dependencies:
     name: Tests - 3.9 Minimum Dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        libraries: ["core", "dask", "spark", "min_min"]
+        libraries: ["core"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,14 +26,6 @@ jobs:
         run: |
           python -m pip install -e . --no-dependencies
           python -m pip install -r woodwork/tests/requirement_files/minimum_test_requirements.txt
-      - if: ${{ matrix.libraries == 'spark' }}
-        name: Install woodwork - minimum spark, core requirements
-        run: |
-          python -m pip install -r woodwork/tests/requirement_files/minimum_spark_requirements.txt
-      - if: ${{ matrix.libraries == 'dask' }}
-        name: Install woodwork - minimum dask, core requirements
-        run: |
-          python -m pip install -r woodwork/tests/requirement_files/minimum_dask_requirements.txt
       - if: ${{ matrix.libraries == 'core' }}
         name: Install woodwork - minimum core requirements
         run: |

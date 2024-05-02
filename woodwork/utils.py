@@ -277,26 +277,18 @@ def _coerce_to_float(val):
 def _is_valid_latlong_series(series):
     """Returns True if all elements in the series contain properly formatted LatLong values,
     otherwise returns False"""
-    if ww.accessor_utils._is_dask_series(series):
-        series = series.get_partition(0).compute()
-    if ww.accessor_utils._is_spark_series(series):
-        series = series.to_pandas()
-        is_spark = True
-    else:
-        is_spark = False
-    if series.apply(_is_valid_latlong_value, args=(is_spark,)).all():
+    if series.apply(_is_valid_latlong_value).all():
         return True
     return False
 
 
-def _is_valid_latlong_value(val, is_spark=False):
-    """Returns True if the value provided is a properly formatted LatLong value for a
-    pandas, Dask or Spark Series, otherwise returns False."""
+def _is_valid_latlong_value(val):
+    """Returns True if the value provided is a properly formatted LatLong value, otherwise returns False."""
     if isinstance(val, (list, tuple)):
         if len(val) != 2:
             return False
 
-        if not isinstance(val, list if is_spark else tuple):
+        if not isinstance(val, tuple):
             return False
 
         latitude, longitude = val
@@ -314,9 +306,6 @@ def _is_valid_latlong_value(val, is_spark=False):
             return False
         else:
             return _is_valid_latlong_value(val)
-
-    if is_spark and val is None:
-        return True
 
     return False
 
@@ -521,31 +510,14 @@ def concat_columns(objs, validate_schema=True):
 
             col_names_seen.add(name)
 
-    # Perform concatenation with the correct library
-    obj = objs[0]
-    dd = import_or_none("dask.dataframe")
-    ps = import_or_none("pyspark.pandas")
-
-    lib = pd
-    if ww.accessor_utils._is_spark_dataframe(obj) or ww.accessor_utils._is_spark_series(
-        obj,
-    ):
-        lib = ps
-    elif ww.accessor_utils._is_dask_dataframe(obj) or ww.accessor_utils._is_dask_series(
-        obj,
-    ):
-        lib = dd
-
-    combined_df = lib.concat(objs, axis=1, join="outer")
+    combined_df = pd.concat(objs, axis=1, join="outer")
 
     # The lib.concat breaks the woodwork schema for dataframes with different shapes
     # or mismatched indices.
     mask = combined_df.isnull().any()
     null_cols = mask[mask].index
-    if not ww.accessor_utils._is_dask_dataframe(combined_df):
-        null_cols = null_cols.to_numpy()
-    else:
-        null_cols = list(null_cols)
+    null_cols = null_cols.to_numpy()
+
     for null_col in null_cols:
         if null_col in logical_types and isinstance(
             logical_types[null_col],
@@ -629,13 +601,6 @@ def _infer_datetime_format(dates, n=100):
         n (int): the maximum number of nonnull rows to sample from the series
     """
     dates_no_null = dates.dropna()
-
-    ps = import_or_none("pyspark.pandas")
-    dd = import_or_none("dask.dataframe")
-    if ps and isinstance(dates_no_null, ps.series.Series):
-        dates_no_null = dates_no_null.to_pandas()
-    if dd and isinstance(dates_no_null, dd.Series):
-        dates_no_null = dates_no_null.compute()
 
     random_n = dates_no_null.sample(min(n, len(dates_no_null)), random_state=42)
 
