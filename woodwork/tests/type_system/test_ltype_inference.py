@@ -19,7 +19,6 @@ from woodwork.logical_types import (
     Timedelta,
     Unknown,
 )
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.type_sys.type_system import (
     DEFAULT_INFERENCE_FUNCTIONS,
     DEFAULT_RELATIONSHIPS,
@@ -54,7 +53,7 @@ def test_boolean_inference(bools):
             if True in series.dropna().values:
                 cast_series = series.astype(dtype)
             inferred_type = ww.type_system.infer_logical_type(cast_series)
-            if to_pandas(cast_series).isnull().any():
+            if cast_series.isnull().any():
                 assert isinstance(inferred_type, BooleanNullable)
             else:
                 assert isinstance(inferred_type, Boolean)
@@ -117,9 +116,9 @@ def test_natural_language_inference(natural_language):
 
 
 @patch("woodwork.type_sys.inference_functions.natural_language_func")
-def test_nl_inference_called_on_no_other_matches(nl_mock, pandas_natural_language):
+def test_nl_inference_called_on_no_other_matches(nl_mock, natural_language):
     assert isinstance(
-        ww.type_system.infer_logical_type(pandas_natural_language[0]),
+        ww.type_system.infer_logical_type(natural_language[0]),
         NaturalLanguage,
     )
     new_type_sys = TypeSystem(
@@ -128,33 +127,33 @@ def test_nl_inference_called_on_no_other_matches(nl_mock, pandas_natural_languag
         default_type=DEFAULT_TYPE,
     )
     new_type_sys.inference_functions[NaturalLanguage] = nl_mock
-    _ = new_type_sys.infer_logical_type(pandas_natural_language[0])
+    _ = new_type_sys.infer_logical_type(natural_language[0])
     assert nl_mock.called
 
 
 @patch("woodwork.type_sys.inference_functions.natural_language_func")
-def test_nl_inference_called_with_unknown_type(nl_mock, pandas_strings):
-    assert isinstance(ww.type_system.infer_logical_type(pandas_strings[0]), Unknown)
+def test_nl_inference_called_with_unknown_type(nl_mock, strings):
+    assert isinstance(ww.type_system.infer_logical_type(strings[0]), Unknown)
     new_type_sys = TypeSystem(
         inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
         relationships=DEFAULT_RELATIONSHIPS,
         default_type=DEFAULT_TYPE,
     )
     new_type_sys.inference_functions[NaturalLanguage] = nl_mock
-    _ = new_type_sys.infer_logical_type(pandas_strings[0])
+    _ = new_type_sys.infer_logical_type(strings[0])
     assert nl_mock.called
 
 
 @patch("woodwork.type_sys.inference_functions.natural_language_func")
-def test_nl_inference_not_called_with_other_matches(nl_mock, pandas_integers):
-    assert isinstance(ww.type_system.infer_logical_type(pandas_integers[0]), Integer)
+def test_nl_inference_not_called_with_other_matches(nl_mock, integers):
+    assert isinstance(ww.type_system.infer_logical_type(integers[0]), Integer)
     new_type_sys = TypeSystem(
         inference_functions=DEFAULT_INFERENCE_FUNCTIONS,
         relationships=DEFAULT_RELATIONSHIPS,
         default_type=DEFAULT_TYPE,
     )
     new_type_sys.inference_functions[NaturalLanguage] = nl_mock
-    _ = new_type_sys.infer_logical_type(pandas_integers[0])
+    _ = new_type_sys.infer_logical_type(integers[0])
     assert not nl_mock.called
 
 

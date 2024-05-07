@@ -52,13 +52,13 @@ def test_concat_cols_ww_dfs(sample_df):
     assert "test_tag" in combined_df.ww.semantic_tags["age"]
     assert combined_df.ww.metadata == {"created_by": "user0"}
 
-    pandas_combined_df = pd.concat(
+    combined_df = pd.concat(
         [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert combined_df.equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_uninit_dfs(sample_df):
@@ -100,13 +100,13 @@ def test_concat_cols_uninit_dfs(sample_df):
 
     df1.ww.init()
     df2.ww.init()
-    pandas_combined_df = pd.concat(
+    combined_df = pd.concat(
         [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert combined_df.equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_combo_dfs(sample_df):
@@ -143,13 +143,13 @@ def test_concat_cols_combo_dfs(sample_df):
 
     df1.ww.init()
     df2.ww.init()
-    pandas_combined_df = pd.concat(
+    combined_df = pd.concat(
         [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert combined_df.equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_with_series(sample_df):
@@ -165,13 +165,13 @@ def test_concat_cols_with_series(sample_df):
     df.ww.init()
     s1.ww.init()
     s2.ww.init()
-    pandas_combined_df = pd.concat(
+    combined_df = pd.concat(
         [df, s1, s2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert combined_df.equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_with_conflicting_ww_indexes(sample_df):
@@ -411,12 +411,12 @@ def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
     assert len(combined_df) == 4
 
 
-def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df_pandas):
+def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df):
     # Only pandas checks for index uniqueness
-    sample_df_pandas.ww.init(index="id", logical_types={"id": "IntegerNullable"})
+    sample_df.ww.init(index="id", logical_types={"id": "IntegerNullable"})
 
-    df1 = sample_df_pandas.ww.loc[[0, 1], ["id", "full_name"]]
-    df2 = sample_df_pandas.ww.loc[[2, 3], ["signup_date", "email"]]
+    df1 = sample_df.ww.loc[[0, 1], ["id", "full_name"]]
+    df2 = sample_df.ww.loc[[2, 3], ["signup_date", "email"]]
 
     error = "Index column must be unique"
     with pytest.raises(IndexError, match=error):

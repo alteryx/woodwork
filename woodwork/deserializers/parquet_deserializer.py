@@ -4,6 +4,8 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+import pandas as pd
+
 from woodwork.deserializers.deserializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE,
     Deserializer,
@@ -46,8 +48,7 @@ class ParquetDeserializer(Deserializer):
 
     def read_from_local_path(self):
         self.configure_deserializer()
-        lib = self._get_library()
-        return lib.read_parquet(self.read_path, engine=self.kwargs["engine"])
+        return pd.read_parquet(self.read_path, engine=self.kwargs["engine"])
 
     def read_from_s3(self, profile_name):
         with tempfile.TemporaryDirectory() as tmpdir:

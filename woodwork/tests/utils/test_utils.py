@@ -25,7 +25,6 @@ from woodwork.logical_types import (
     PostalCode,
     SubRegionCode,
 )
-from woodwork.tests.testing_utils import concat_dataframe_or_series
 from woodwork.type_sys.type_system import DEFAULT_INFERENCE_FUNCTIONS
 from woodwork.type_sys.utils import (
     _get_specified_ltype_params,
@@ -607,31 +606,3 @@ def test_callback_caller_no_callback():
     caller.update(1)
 
     assert caller.current_progress == 0
-
-
-def test_concat_dataframe_or_series_with_series():
-    """Tests whether series are correctly concatenated"""
-    pandas_series = pd.Series([1, 2, 3])
-
-    assert len(concat_dataframe_or_series(pandas_series, pandas_series)) == 2 * len(
-        pandas_series,
-    )
-
-
-def test_concat_dataframe_or_series_with_series_with_dataframe():
-    """Tests whether dataframes are correctly concatenated"""
-    d = {"col1": [1, 2], "col2": [3, 4]}
-    df = pd.DataFrame(data=d)
-
-    assert len(concat_dataframe_or_series(df, df)) == 2 * len(
-        df,
-    )
-
-
-def tests_concat_dataframe_or_series_concatenates_in_correct_order():
-    """Tests to_add argument is appropriately added to end of base argument"""
-    base = pd.Series([1, 2, 3])
-    to_add = pd.Series([4, 5, 6])
-    concatenated_object = concat_dataframe_or_series(base, to_add)
-    assert concatenated_object.head(3).equals(pd.Series([1, 2, 3]))
-    assert concatenated_object.tail(3).equals(pd.Series([4, 5, 6]))

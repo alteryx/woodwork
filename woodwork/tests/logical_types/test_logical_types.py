@@ -81,16 +81,16 @@ def test_ordinal_init_with_order():
     assert str(ordinal_from_list) == "Ordinal: ['bronze', 'silver', 'gold']"
 
 
-def test_ordinal_transform_validates(ordinal_transform_series_pandas) -> None:
+def test_ordinal_transform_validates(ordinal_transform_series) -> None:
     typ = Ordinal(order=None)
     with pytest.raises(TypeError, match=r"order values defined"):
-        typ.transform(ordinal_transform_series_pandas)
+        typ.transform(ordinal_transform_series)
 
 
-def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
+def test_ordinal_transform(ordinal_transform_series) -> None:
     order = [2, 1, 3]
     typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_pandas)
+    ser_ = typ.transform(ordinal_transform_series)
 
     assert ser_.dtype == "category"
     pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
@@ -193,7 +193,7 @@ def test_datetime_coerce_user_format():
     assert datetime.datetime_format == "%m/%d/%Y"
 
 
-def test_ordinal_transform(sample_series):
+def test_ordinal_transform_missing_vals(sample_series):
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
@@ -391,8 +391,8 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
     )
 
 
-def test_postal_code_error(postal_code_numeric_series_pandas):
-    series = pd.concat([postal_code_numeric_series_pandas, pd.Series([1234.5])])
+def test_postal_code_error(postal_code_numeric_series):
+    series = pd.concat([postal_code_numeric_series, pd.Series([1234.5])])
     match = (
         "Error converting datatype for None from type float64 to type string. "
         "Please confirm the underlying data is consistent with logical type PostalCode."

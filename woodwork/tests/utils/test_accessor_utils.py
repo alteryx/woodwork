@@ -57,10 +57,10 @@ def test_init_series_with_invalid_type(sample_df):
             init_series(input_)
 
 
-def test_init_series_with_np_array(sample_series_pandas):
-    series = init_series(sample_series_pandas.to_numpy())
+def test_init_series_with_np_array(sample_series):
+    series = init_series(sample_series.to_numpy())
     series2 = init_series(
-        sample_series_pandas,
+        sample_series,
     )  # Sample series panda contains ['a','b','c','a']
     assert series.equals(series2)
     assert series.ww.logical_type == series2.ww.logical_type

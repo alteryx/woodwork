@@ -529,8 +529,8 @@ def falsy_names_df():
 
 
 @pytest.fixture()
-def sample_column_names(sample_df_pandas):
-    return sample_df_pandas.columns.to_list()
+def sample_column_names(sample_df):
+    return sample_df.columns.to_list()
 
 
 @pytest.fixture()

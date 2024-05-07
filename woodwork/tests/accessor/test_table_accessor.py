@@ -2964,19 +2964,19 @@ def test_falsy_columns_in_partial_schema(falsy_names_df):
     assert new_df.ww.name == 0
 
 
-def test_nan_index_error(sample_df_pandas):
+def test_nan_index_error(sample_df):
     match = "Index contains null values"
     with pytest.raises(IndexError, match=match):
-        sample_df_pandas.ww.init(index="email")
+        sample_df.ww.init(index="email")
 
-    sample_df_pandas.ww.init()
+    sample_df.ww.init()
     with pytest.raises(IndexError, match=match):
-        sample_df_pandas.ww.set_index("email")
+        sample_df.ww.set_index("email")
 
-    sample_df_pandas.ww.init(index="id", logical_types={"id": "Double"})
-    schema = sample_df_pandas.ww.schema
+    sample_df.ww.init(index="id", logical_types={"id": "Double"})
+    schema = sample_df.ww.schema
 
-    nan_df = sample_df_pandas.replace({3: float("nan")})
+    nan_df = sample_df.replace({3: float("nan")})
     nan_df = nan_df.set_index("id", drop=False)
 
     with pytest.raises(ValueError, match=match):
@@ -3008,7 +3008,7 @@ def test_validate_logical_types(sample_df):
         },
     )
 
-    df = pd.concat(df, invalid_df)
+    df = pd.concat([df, invalid_df])
 
     df.ww.init(
         logical_types={

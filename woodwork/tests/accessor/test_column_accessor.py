@@ -685,11 +685,7 @@ def test_accessor_equality(sample_series):
     changed_series = changed_series.astype("string")
     changed_series.ww.init(logical_type="NaturalLanguage")
 
-    # We only check underlying data for equality with pandas dataframes
-    if isinstance(str_col, pd.Series):
-        assert str_col.ww != changed_series.ww
-    else:
-        assert str_col.ww == changed_series.ww
+    assert str_col.ww != changed_series.ww
 
 
 def test_accessor_shallow_equality(sample_series):
@@ -721,11 +717,7 @@ def test_accessor_shallow_equality(sample_series):
     assert diff_data_col.ww.__eq__(metadata_col.ww, deep=False)
     assert same_data_col.ww.__eq__(metadata_col.ww, deep=False)
     assert same_data_col.ww.__eq__(metadata_col.ww, deep=True)
-    if isinstance(sample_series, pd.Series):
-        # We only check underlying data for equality with pandas dataframes
-        assert not diff_data_col.ww.__eq__(metadata_col.ww, deep=True)
-    else:
-        assert diff_data_col.ww.__eq__(metadata_col.ww, deep=True)
+    assert not diff_data_col.ww.__eq__(metadata_col.ww, deep=True)
 
 
 def test_accessor_metadata(sample_series):
@@ -840,10 +832,10 @@ def test_ordinal_validation_methods_called_init(mock_validate, sample_series):
 
 
 @patch("woodwork.logical_types.LogicalType.validate")
-def test_latlong_validation_methods_called_init(mock_validate, latlong_df_pandas):
+def test_latlong_validation_methods_called_init(mock_validate, latlong_df):
     assert not mock_validate.called
 
-    latlong_series = latlong_df_pandas["null_latitude"]
+    latlong_series = latlong_df["null_latitude"]
     not_validated = latlong_series.copy()
     not_validated.ww.init(LatLong, validate=False)
 
@@ -940,11 +932,11 @@ EXPECTED_COLUMN_NULLABILITIES = {
 }
 
 
-def test_nullable_attribute(sample_df_pandas):
-    sample_df_pandas.ww.init()
+def test_nullable_attribute(sample_df):
+    sample_df.ww.init()
 
-    for key in sample_df_pandas.ww.columns:
-        actual = sample_df_pandas.ww[key].ww.nullable
+    for key in sample_df.ww.columns:
+        actual = sample_df.ww[key].ww.nullable
         expected = EXPECTED_COLUMN_NULLABILITIES[key]
 
         assert actual is expected
@@ -957,7 +949,7 @@ def test_validate_logical_type(sample_df):
 
     invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
 
-    series = pd.concat(series, invalid_row)
+    series = pd.concat([series, invalid_row])
     series = init_series(series, logical_type="EmailAddress")
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."

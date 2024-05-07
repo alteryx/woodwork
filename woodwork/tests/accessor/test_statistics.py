@@ -2152,8 +2152,8 @@ def test_get_low_high_bound_warnings():
         _get_low_high_bound(None, "something_else", 1, 1, None, None, None)
 
 
-def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
-    has_outliers_series = outliers_df_pandas["has_outliers"]
+def test_get_medcouple(outliers_df, skewed_outliers_df):
+    has_outliers_series = outliers_df["has_outliers"]
     has_outliers_series = pd.concat(
         [has_outliers_series, pd.Series([39], dtype="int64")],
         ignore_index=True,
@@ -2162,12 +2162,12 @@ def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
     mc = _get_medcouple_statistic(has_outliers_series)
     assert mc == 0.122
 
-    outliers_series_skewed_right = skewed_outliers_df_pandas["right_skewed_outliers"]
+    outliers_series_skewed_right = skewed_outliers_df["right_skewed_outliers"]
     outliers_series_skewed_right.ww.init()
     mc = _get_medcouple_statistic(outliers_series_skewed_right)
     assert mc == 0.333
 
-    outliers_series_skewed = skewed_outliers_df_pandas[
+    outliers_series_skewed = skewed_outliers_df[
         ["right_skewed_outliers", "left_skewed_outliers"]
     ]
     outliers_series_skewed.ww.init()
@@ -2176,12 +2176,10 @@ def test_get_medcouple(outliers_df_pandas, skewed_outliers_df_pandas):
     np.testing.assert_almost_equal(mc, np.array([0.33333333, -0.33333333]))
 
 
-def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_pandas):
+def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df):
     # Column of 66,000, far above the 10,000 limit
     contains_nans_series_skewed = (
-        skewed_outliers_df_pandas["right_skewed_outliers"]
-        .repeat(1000)
-        .reset_index(drop=True)
+        skewed_outliers_df["right_skewed_outliers"].repeat(1000).reset_index(drop=True)
     )
     contains_nans_series_skewed.ww.init()
 
@@ -2192,13 +2190,13 @@ def test_determine_best_outlier_method_sampling_outcome(skewed_outliers_df_panda
 
 
 def test_determine_best_outlier_method_equivalent_outcome(
-    outliers_df_pandas,
-    skewed_outliers_df_pandas,
+    outliers_df,
+    skewed_outliers_df,
 ):
-    contains_nans_series_skewed = skewed_outliers_df_pandas["right_skewed_outliers"]
+    contains_nans_series_skewed = skewed_outliers_df["right_skewed_outliers"]
     contains_nans_series_skewed.ww.init()
 
-    contains_nans_series = outliers_df_pandas["has_outliers"]
+    contains_nans_series = outliers_df["has_outliers"]
     contains_nans_series.ww.init()
 
     outliers_mc_skewed = contains_nans_series_skewed.ww.get_outliers(method="medcouple")
@@ -2228,11 +2226,11 @@ def test_determine_best_outlier_method_equivalent_outcome(
 def test_infer_temporal_frequencies(
     infer_frequency,
     expected_call_args,
-    datetime_freqs_df_pandas,
+    datetime_freqs_df,
 ):
-    datetime_freqs_df_pandas.ww.init()
+    datetime_freqs_df.ww.init()
 
-    datetime_freqs_df_pandas.ww.infer_temporal_frequencies(**expected_call_args)
+    datetime_freqs_df.ww.infer_temporal_frequencies(**expected_call_args)
 
     expected_call_count = (
         len(expected_call_args["temporal_columns"])
@@ -2257,33 +2255,33 @@ def test_infer_temporal_frequencies(
     assert actual_call_args["threshold"] == threshold
 
 
-def test_infer_temporal_frequencies_with_columns(datetime_freqs_df_pandas):
-    datetime_freqs_df_pandas.ww.init(time_index="2D_freq")
+def test_infer_temporal_frequencies_with_columns(datetime_freqs_df):
+    datetime_freqs_df.ww.init(time_index="2D_freq")
 
-    frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
-        temporal_columns=[datetime_freqs_df_pandas.ww.time_index],
+    frequency_dict = datetime_freqs_df.ww.infer_temporal_frequencies(
+        temporal_columns=[datetime_freqs_df.ww.time_index],
     )
     assert len(frequency_dict) == 1
     assert frequency_dict["2D_freq"] == "2D"
 
-    empty_frequency_dict = datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+    empty_frequency_dict = datetime_freqs_df.ww.infer_temporal_frequencies(
         temporal_columns=[],
     )
     assert len(empty_frequency_dict) == 0
 
 
-def test_infer_temporal_frequencies_errors(datetime_freqs_df_pandas):
-    datetime_freqs_df_pandas.ww.init()
+def test_infer_temporal_frequencies_errors(datetime_freqs_df):
+    datetime_freqs_df.ww.init()
 
     error = "Column not_present not found in dataframe."
     with pytest.raises(ValueError, match=error):
-        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        datetime_freqs_df.ww.infer_temporal_frequencies(
             temporal_columns=["2D_freq", "not_present"],
         )
 
     error = "Cannot determine frequency for column ints with logical type Integer"
     with pytest.raises(TypeError, match=error):
-        datetime_freqs_df_pandas.ww.infer_temporal_frequencies(
+        datetime_freqs_df.ww.infer_temporal_frequencies(
             temporal_columns=["1d_skipped_one_freq", "ints"],
         )
 
