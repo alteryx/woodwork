@@ -13,18 +13,6 @@ from woodwork.tests.testing_utils.table_utils import (
 )
 
 
-def pd_to_dask(series):
-    dask = pytest.importorskip("dask", reason="Dask not installed, skipping")
-    dask.config.set({"dataframe.convert-string": False})
-    dd = dask.dataframe
-    return dd.from_pandas(series, npartitions=1)
-
-
-def pd_to_spark(series):
-    ps = pytest.importorskip("pyspark.pandas", reason="Spark not installed, skipping")
-    return ps.from_pandas(convert_tuples_to_lists(series))
-
-
 def convert_tuples_to_lists(series):
     def apply_func(value):
         if type(value) is tuple:

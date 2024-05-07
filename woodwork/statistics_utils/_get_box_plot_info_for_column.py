@@ -6,11 +6,6 @@ from scipy.stats import skew
 
 import woodwork as ww
 from woodwork.statistics_utils._get_medcouple_statistic import _sample_for_medcouple
-from woodwork.utils import import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
-
 
 method_result = namedtuple(
     "MedcoupleHeuristicResult",
@@ -146,11 +141,6 @@ def _get_box_plot_info_for_column(
 
     if quantiles and not isinstance(quantiles, dict):
         raise TypeError("quantiles must be a dictionary.")
-
-    if dd and isinstance(series, dd.Series):
-        series = series.compute()
-    if ps and isinstance(series, ps.Series):
-        series = series.to_pandas()
 
     # remove null values from the data
     series = series.dropna()

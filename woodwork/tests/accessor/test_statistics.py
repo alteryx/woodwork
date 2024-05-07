@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from scipy.stats import skew
 
-from woodwork.accessor_utils import _is_spark_dataframe, init_series
+from woodwork.accessor_utils import init_series
 from woodwork.config import CONFIG_DEFAULTS, config
 from woodwork.exceptions import ParametersIgnoredWarning, SparseDataWarning
 from woodwork.logical_types import (
@@ -58,9 +58,7 @@ from woodwork.statistics_utils._parse_measures import _parse_measures
 from woodwork.tests.testing_utils import (
     _check_close,
     check_empty_box_plot_dict,
-    concat_dataframe_or_series,
     dep_between_cols,
-    to_pandas,
 )
 
 
@@ -189,7 +187,7 @@ def test_dependence(df_mi, measure):
             _check_close(actual, expected_df[measurement][row])
 
     # Confirm that none of this changed the underlying df
-    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+    pd.testing.assert_frame_equal(df_mi, original_df)
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
@@ -199,14 +197,11 @@ def test_dependence_many_rows(df_mi, measure):
     dep_df = df_mi.ww.dependence(measures=measure, min_shared=12)
     many_rows_df = df_mi.ww.dependence(measure, nrows=100000, min_shared=12)
     pd.testing.assert_frame_equal(dep_df, many_rows_df)
-    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+    pd.testing.assert_frame_equal(df_mi, original_df)
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
 def test_dependence_random_seed(df_mi, measure):
-    if _is_spark_dataframe(df_mi):
-        # TODO: evaluate if koalas order remains same across other machines
-        pytest.xfail("koalas sample order differs, may not be deterministic")
     df_mi.ww.init(logical_types={"dates": Datetime(datetime_format="%Y-%m-%d")})
     original_df = df_mi.copy()
     dep_df = df_mi.ww.dependence(measures=measure, nrows=6, min_shared=6, random_seed=2)
@@ -218,7 +213,7 @@ def test_dependence_random_seed(df_mi, measure):
     else:
         expected = 0.7071067811865474
     np.testing.assert_allclose(dep_df.loc[row][measure], expected)
-    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+    pd.testing.assert_frame_equal(df_mi, original_df)
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
@@ -240,7 +235,7 @@ def test_dependence_one_row(df_mi, measure):
         for row in dep_df[measure_col]:
             _check_close(row, expected[measure_col])
 
-    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+    pd.testing.assert_frame_equal(df_mi, original_df)
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
@@ -286,7 +281,7 @@ def test_dependence_num_bins(df_mi, measure):
             _check_close(actual, expected_df[measurement][row])
 
     # Confirm that none of this changed the underlying df
-    pd.testing.assert_frame_equal(to_pandas(df_mi), to_pandas(original_df))
+    pd.testing.assert_frame_equal(df_mi, original_df)
 
 
 @pytest.mark.parametrize("measure", ["mutual_info", "pearson", "max", "all"])
@@ -637,54 +632,6 @@ def test_dependence_drop_columns_nunique(nunique):
             assert "c_column" not in dep_dict_str
 
 
-@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
-def test_dependence_drop_columns_dask_spark(df_type):
-    log_types = {
-        "b_column": "Categorical",
-        "c_column": "Categorical",
-        "a_column": "Categorical",
-    }
-    cat_values = {
-        "a_column": [],
-        "b_column": [],
-        "c_column": [],
-    }
-    categoricals_string = "some categorical_{}_{}"
-    for k in cat_values.keys():
-        num = 1000 if k in ["a_column", "c_column"] else 100
-        for n in range(1000):
-            # `a_column`, `c_column`, all have 1000 unique values, while `b_column` has 100
-            cat_values[k].append(categoricals_string.format(k, n % num))
-
-    df = pd.DataFrame(cat_values)
-    if df_type == "dask":
-        dd = pytest.importorskip(
-            "dask.dataframe",
-            reason="Dask not installed, skipping",
-        )
-        df = dd.from_pandas(df, npartitions=1)
-    elif df_type == "spark":
-        ps = pytest.importorskip(
-            "pyspark.pandas",
-            reason="Spark not installed, skipping",
-        )
-        df = ps.from_pandas(df)
-
-    df.ww.init(logical_types=log_types)
-    for dep_dict_str in [
-        str(df.ww.dependence(max_nunique=1000)),
-        str(df.ww.mutual_information(max_nunique=1000)),
-    ]:
-        # based on natural column ordering, "a_column" will be missing rather than "c_column"
-        # even though both have same number of uniques
-        assert "c_column" in dep_dict_str
-        if df_type == "dask":
-            assert "a_column" in dep_dict_str
-        else:
-            assert "a_column" not in dep_dict_str
-        assert "b_column" in dep_dict_str
-
-
 @patch("woodwork.table_accessor._get_dependence_dict")
 def test_pearson_dict(_get_dependence_dict, df_mi, mock_callback):
     df_mi.ww.init()
@@ -952,10 +899,7 @@ def test_describe_accessor_method(describe_df):
 
     # Test categorical columns
     category_data = describe_df[["category_col"]]
-    if _is_spark_dataframe(category_data):
-        expected_dtype = "string"
-    else:
-        expected_dtype = "category"
+    expected_dtype = "category"
 
     for ltype in categorical_ltypes:
         if isclass(ltype):
@@ -1105,31 +1049,29 @@ def test_describe_accessor_method(describe_df):
         assert stats_df.index.tolist() == expected_index
         assert expected_vals.equals(stats_df["formatted_datetime_col"].dropna())
 
-    # Test timedelta columns - Skip for Spark
-    if not _is_spark_dataframe(describe_df):
-        timedelta_data = describe_df["timedelta_col"]
-        for ltype in timedelta_ltypes:
-            expected_vals = pd.Series(
-                {
-                    "physical_type": ltype.primary_dtype,
-                    "logical_type": ltype(),
-                    "semantic_tags": {"custom_tag"},
-                    "count": 7,
-                    "nan_count": 1,
-                    "mode": pd.Timedelta("31days"),
-                },
-                name="col",
-            )
-            df = pd.DataFrame({"col": timedelta_data})
-            df.ww.init(
-                logical_types={"col": ltype},
-                semantic_tags={"col": "custom_tag"},
-            )
-            stats_df = df.ww.describe()
-            assert isinstance(stats_df, pd.DataFrame)
-            assert set(stats_df.columns) == {"col"}
-            assert stats_df.index.tolist() == expected_index
-            assert expected_vals.equals(stats_df["col"].dropna())
+    timedelta_data = describe_df["timedelta_col"]
+    for ltype in timedelta_ltypes:
+        expected_vals = pd.Series(
+            {
+                "physical_type": ltype.primary_dtype,
+                "logical_type": ltype(),
+                "semantic_tags": {"custom_tag"},
+                "count": 7,
+                "nan_count": 1,
+                "mode": pd.Timedelta("31days"),
+            },
+            name="col",
+        )
+        df = pd.DataFrame({"col": timedelta_data})
+        df.ww.init(
+            logical_types={"col": ltype},
+            semantic_tags={"col": "custom_tag"},
+        )
+        stats_df = df.ww.describe()
+        assert isinstance(stats_df, pd.DataFrame)
+        assert set(stats_df.columns) == {"col"}
+        assert stats_df.index.tolist() == expected_index
+        assert expected_vals.equals(stats_df["col"].dropna())
 
     # Test numeric columns with nullable ltypes
     numeric_data = describe_df[["numeric_col"]]
@@ -1255,7 +1197,7 @@ def test_describe_accessor_method(describe_df):
     latlong_data = describe_df[["latlong_col"]]
     expected_dtype = "object"
     for ltype in latlong_ltypes:
-        mode = [0, 0] if _is_spark_dataframe(describe_df) else (0, 0)
+        mode = (0, 0)
         expected_vals = pd.Series(
             {
                 "physical_type": expected_dtype,
@@ -1438,11 +1380,7 @@ def test_describe_add_result_callback(describe_df, mock_results_callback):
     pd.testing.assert_frame_equal(actual_results, description)
     for ind, new_updated in enumerate(all_results):
         assert new_updated.shape[1] == ind + 1
-    # Spark df does not have timedelta column
-    if _is_spark_dataframe(describe_df):
-        assert len(all_results) == 8
-    else:
-        assert len(all_results) == 9
+    assert len(all_results) == 9
     assert actual_most_recent[0].name == "boolean_col"
     assert actual_most_recent[-1].name == "unknown_col"
 
@@ -1453,11 +1391,7 @@ def test_describe_callback(describe_df, mock_callback):
     describe_df.ww.describe(callback=mock_callback)
 
     assert mock_callback.unit == "calculations"
-    # Spark df does not have timedelta column
-    if _is_spark_dataframe(describe_df):
-        ncalls = 10
-    else:
-        ncalls = 11
+    ncalls = 11
 
     assert len(mock_callback.progress_history) == ncalls
 
@@ -1604,17 +1538,6 @@ def test_value_counts(categorical_df):
         {"value": 1, "count": 2},
         {"value": 3, "count": 1},
     ]
-    # Spark converts numeric categories to strings, so we need to update the expected values for this
-    # Spark will result in `pd.NA` instead of `np.nan` in categorical columns
-    if _is_spark_dataframe(categorical_df):
-        updated_results = []
-        for items in expected_cat1:
-            updated_results.append(
-                {k: (str(v) if k == "value" else v) for k, v in items.items()},
-            )
-        expected_cat1 = updated_results
-
-        nan = None
 
     expected_cat2 = [
         {"value": nan, "count": 6},
@@ -2202,8 +2125,6 @@ def test_get_outliers_for_column_with_nans_medcouple(skewed_outliers_df):
 
 @pytest.mark.parametrize("mc", [-1.0, -0.5, -0.1, 0, 0.3333333, 1.0])
 def test_determine_coefficients(mc, skewed_outliers_df):
-    if _is_spark_dataframe(skewed_outliers_df):
-        pytest.xfail("spark hasn't implemented __iter__() for series")
     right_skewed = skewed_outliers_df["right_skewed_outliers"]
     left_skewed = skewed_outliers_df["left_skewed_outliers"]
 
@@ -2309,7 +2230,6 @@ def test_infer_temporal_frequencies(
     expected_call_args,
     datetime_freqs_df_pandas,
 ):
-    # TODO: Add support for Dask and Spark DataFrames
     datetime_freqs_df_pandas.ww.init()
 
     datetime_freqs_df_pandas.ww.infer_temporal_frequencies(**expected_call_args)
@@ -2462,7 +2382,7 @@ def test_spearman_ordinal(df_mi, use_ordinal):
     else:
         df_mi.ww.init()
     sp = df_mi.ww.dependence(measures=["spearman"])
-    valid_sp_columns = concat_dataframe_or_series(sp.column_1, sp.column_2).unique()
+    valid_sp_columns = pd.concat([sp.column_1, sp.column_2]).unique()
     assert "strs" not in valid_sp_columns
     if use_ordinal:
         assert "strs2" in valid_sp_columns

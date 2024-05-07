@@ -7,13 +7,7 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.accessor_utils import (
-    _is_dask_dataframe,
-    _is_dask_series,
-    _is_spark_dataframe,
-    _is_spark_series,
-    init_series,
-)
+from woodwork.accessor_utils import init_series
 from woodwork.exceptions import (
     ColumnBothIgnoredAndSetError,
     ColumnNotPresentError,
@@ -64,17 +58,11 @@ from woodwork.table_accessor import (
 )
 from woodwork.table_schema import TableSchema
 from woodwork.tests.testing_utils import (
-    concat_dataframe_or_series,
     is_property,
     is_public_method,
-    to_pandas,
     validate_subset_schema,
 )
 from woodwork.tests.testing_utils.table_utils import assert_schema_equal
-from woodwork.utils import import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
 
 
 def test_check_index_errors(sample_df):
@@ -82,14 +70,12 @@ def test_check_index_errors(sample_df):
     with pytest.raises(ColumnNotPresentError, match=error_message):
         _check_index(dataframe=sample_df, index="foo")
 
-    if isinstance(sample_df, pd.DataFrame):
-        # Does not check for index uniqueness with Dask
-        error_message = "Index column must be unique"
-        with pytest.raises(LookupError, match=error_message):
-            _check_index(sample_df, index="age")
+    error_message = "Index column must be unique"
+    with pytest.raises(LookupError, match=error_message):
+        _check_index(sample_df, index="age")
 
-        with pytest.raises(IndexError, match="Index contains null values"):
-            _check_index(sample_df, index="email")
+    with pytest.raises(IndexError, match="Index contains null values"):
+        _check_index(sample_df, index="email")
 
 
 def test_check_logical_types_errors(sample_df):
@@ -117,16 +103,8 @@ def test_check_time_index_errors(sample_df):
 
 
 def test_check_unique_column_names_errors(sample_df):
-    if _is_spark_dataframe(sample_df):
-        pytest.skip("Spark enforces unique column names")
     duplicate_cols_df = sample_df.copy()
-    if _is_dask_dataframe(sample_df):
-        duplicate_cols_df = dd.concat(
-            [duplicate_cols_df, duplicate_cols_df["age"]],
-            axis=1,
-        )
-    else:
-        duplicate_cols_df.insert(0, "age", [18, 21, 65, 43], allow_duplicates=True)
+    duplicate_cols_df.insert(0, "age", [18, 21, 65, 43], allow_duplicates=True)
     with pytest.raises(
         IndexError,
         match="Dataframe cannot contain duplicate columns names",
@@ -262,14 +240,11 @@ def test_accessor_physical_types_property(sample_df):
     assert set(sample_df.ww.physical_types.keys()) == set(sample_df.columns)
     for k, v in sample_df.ww.physical_types.items():
         logical_type = sample_df.ww.columns[k].logical_type
-        if _is_spark_dataframe(sample_df) and logical_type.pyspark_dtype is not None:
-            assert v == logical_type.pyspark_dtype
-        else:
-            assert v == logical_type.primary_dtype
+        assert v == logical_type.primary_dtype
 
 
 def test_accessor_separation_of_params(sample_df):
-    # mix up order of acccessor and schema params
+    # mix up order of accessor and schema params
     schema_df = sample_df.copy()
     schema_df.ww.init(
         name="test_name",
@@ -444,14 +419,14 @@ def test_getitem(sample_df):
 
     subset = ["id", "signup_date"]
     df_subset = df.ww[subset]
-    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    pd.testing.assert_frame_equal(df[subset], df_subset)
     assert subset == list(df_subset.ww._schema.columns)
     assert df_subset.ww.index == "id"
     assert df_subset.ww.time_index == "signup_date"
 
     subset = ["age", "email"]
     df_subset = df.ww[subset]
-    pd.testing.assert_frame_equal(to_pandas(df[subset]), to_pandas(df_subset))
+    pd.testing.assert_frame_equal(df[subset], df_subset)
     assert subset == list(df_subset.ww._schema.columns)
     assert df_subset.ww.index is None
     assert df_subset.ww.time_index is None
@@ -464,12 +439,12 @@ def test_getitem(sample_df):
     assert subset.ww.time_index is None
 
     series = df.ww["age"]
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df["age"]))
+    pd.testing.assert_series_equal(series, df["age"])
     assert isinstance(series.ww.logical_type, Double)
     assert series.ww.semantic_tags == {"custom_tag", "numeric"}
 
     series = df.ww["id"]
-    pd.testing.assert_series_equal(to_pandas(series), to_pandas(df["id"]))
+    pd.testing.assert_series_equal(series, df["id"])
     assert isinstance(series.ww.logical_type, Integer)
     assert series.ww.semantic_tags == {"index"}
 
@@ -862,8 +837,7 @@ def test_datetime_timezones(timezones_df):
             "eastern_2",
         ],
     ).astype("datetime64[ns]")
-    actual_df = to_pandas(timezones_df)
-    pd.testing.assert_frame_equal(actual_df, expected_df)
+    pd.testing.assert_frame_equal(timezones_df, expected_df)
 
 
 def test_datetime_dtype_inference_on_init():
@@ -1014,11 +988,9 @@ def test_sets_object_dtype_on_init(latlong_df):
         df.ww.init(logical_types=ltypes)
         assert isinstance(df.ww.columns[column_name].logical_type, LatLong)
         assert df[column_name].dtype == LatLong.primary_dtype
-        df_pandas = to_pandas(df[column_name])
+        df = df[column_name]
         expected_val = (3, 4)
-        if _is_spark_dataframe(latlong_df):
-            expected_val = [3, 4]
-        assert df_pandas.iloc[-1] == expected_val
+        assert df.iloc[-1] == expected_val
 
 
 def test_sets_string_dtype_on_init():
@@ -1176,11 +1148,6 @@ def test_invalid_dtype_casting():
 
 
 def test_underlying_index_set_no_index_on_init(sample_df):
-    if _is_dask_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_spark_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Spark input")
-
     input_index = pd.Index([99, 88, 77, 66], dtype="Int64")
 
     schema_df = sample_df.copy()
@@ -1200,11 +1167,6 @@ def test_underlying_index_set_no_index_on_init(sample_df):
 
 
 def test_underlying_index_set(sample_df):
-    if _is_dask_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_spark_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Spark input")
-
     # Sets underlying index at init
     schema_df = sample_df.copy()
     schema_df.ww.init(index="full_name")
@@ -1228,11 +1190,6 @@ def test_underlying_index_set(sample_df):
 
 
 def test_underlying_index_reset(sample_df):
-    if _is_dask_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_spark_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Spark input")
-
     specified_index = pd.Index
     unspecified_index = pd.RangeIndex
 
@@ -1262,11 +1219,6 @@ def test_underlying_index_reset(sample_df):
 
 
 def test_underlying_index_unchanged_after_updates(sample_df):
-    if _is_dask_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Dask input")
-    if _is_spark_dataframe(sample_df):
-        pytest.xfail("Setting underlying index is not supported with Spark input")
-
     sample_df.ww.init(index="full_name")
     assert "full_name" in sample_df
     assert sample_df.ww.index == "full_name"
@@ -1324,11 +1276,6 @@ def test_underlying_index_unchanged_after_updates(sample_df):
 
 
 def test_accessor_already_sorted(sample_unsorted_df):
-    if _is_dask_dataframe(sample_unsorted_df):
-        pytest.xfail("Sorting dataframe is not supported with Dask input")
-    if _is_spark_dataframe(sample_unsorted_df):
-        pytest.xfail("Sorting dataframe is not supported with Spark input")
-
     schema_df = sample_unsorted_df.copy()
     schema_df.ww.init(name="schema", index="id", time_index="signup_date")
 
@@ -1338,15 +1285,14 @@ def test_accessor_already_sorted(sample_unsorted_df):
         Datetime,
     )
 
-    sorted_df = (
-        to_pandas(sample_unsorted_df)
-        .sort_values(["signup_date", "id"])
-        .set_index("id", drop=False)
+    sorted_df = sample_unsorted_df.sort_values(["signup_date", "id"]).set_index(
+        "id",
+        drop=False,
     )
     sorted_df.index.name = None
     pd.testing.assert_frame_equal(
         sorted_df,
-        to_pandas(schema_df),
+        schema_df,
         check_index_type=False,
         check_dtype=False,
     )
@@ -1365,22 +1311,17 @@ def test_accessor_already_sorted(sample_unsorted_df):
         Datetime,
     )
 
-    unsorted_df = to_pandas(sample_unsorted_df.set_index("id", drop=False))
+    unsorted_df = sample_unsorted_df.set_index("id", drop=False)
     unsorted_df.index.name = None
     pd.testing.assert_frame_equal(
         unsorted_df,
-        to_pandas(schema_df),
+        schema_df,
         check_index_type=False,
         check_dtype=False,
     )
 
 
 def test_ordinal_with_order(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not compatible",
-        )
-
     ordinal_with_order = Ordinal(order=["a", "b", "c"])
     schema_df = pd.DataFrame(sample_series)
     schema_df.ww.init(logical_types={"sample_series": ordinal_with_order})
@@ -1399,11 +1340,6 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported",
-        )
-
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
@@ -1433,9 +1369,6 @@ def test_ordinal_with_nan_values():
 
 
 def test_accessor_with_falsy_column_names(falsy_names_df):
-    if _is_dask_dataframe(falsy_names_df):
-        pytest.xfail("Dask DataFrames cannot handle integer column names")
-
     schema_df = falsy_names_df.copy()
     schema_df.ww.init(index=0, time_index="")
     assert schema_df.ww.index == 0
@@ -1473,7 +1406,7 @@ def test_dataframe_methods_on_accessor(sample_df):
     assert schema_df.ww._schema is not copied_df.ww._schema
     assert copied_df.ww.schema == schema_df.ww.schema
 
-    pd.testing.assert_frame_equal(to_pandas(schema_df), to_pandas(copied_df))
+    pd.testing.assert_frame_equal(schema_df, copied_df)
 
     ltype_dtype = "int64"
     new_dtype = "string"
@@ -1527,9 +1460,6 @@ def test_dataframe_methods_on_accessor_new_schema_object(sample_df):
 
 
 def test_dataframe_methods_on_accessor_inplace(sample_df):
-    # TODO: Try to find a supported inplace method for Dask, if one exists
-    if _is_dask_dataframe(sample_df):
-        pytest.xfail("Dask does not support sort_values or rename inplace.")
     schema_df = sample_df.copy()
     schema_df.ww.init(name="test_schema")
 
@@ -1539,8 +1469,8 @@ def test_dataframe_methods_on_accessor_inplace(sample_df):
     assert schema_df.ww.name == "test_schema"
 
     pd.testing.assert_frame_equal(
-        to_pandas(schema_df),
-        to_pandas(df_pre_sort.sort_values(["full_name"])),
+        schema_df,
+        df_pre_sort.sort_values(["full_name"]),
     )
 
     warning = "Operation performed by insert has invalidated the Woodwork typing information:\n "
@@ -1562,7 +1492,7 @@ def test_dataframe_methods_on_accessor_returning_series(sample_df):
     pd.testing.assert_series_equal(dtypes, schema_df.dtypes)
     all_series = schema_df.ww.all()
     assert schema_df.ww.name == "test_schema"
-    pd.testing.assert_series_equal(to_pandas(all_series), to_pandas(schema_df.all()))
+    pd.testing.assert_series_equal(all_series, schema_df.all())
 
 
 def test_dataframe_methods_on_accessor_other_returns(sample_df):
@@ -1572,32 +1502,10 @@ def test_dataframe_methods_on_accessor_other_returns(sample_df):
     shape = schema_df.ww.shape
 
     assert schema_df.ww.name == "test_schema"
-    if _is_dask_dataframe(sample_df):
-        shape = (shape[0].compute(), shape[1])
-    assert shape == to_pandas(schema_df).shape
+    assert shape == schema_df.shape
     assert schema_df.ww.name == "test_schema"
 
-    if not _is_dask_dataframe(sample_df):
-        # keys() not supported with Dask
-        pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
-
-
-def test_dataframe_methods_on_accessor_to_pandas(sample_df):
-    if isinstance(sample_df, pd.DataFrame):
-        pytest.skip("No need to test converting pandas DataFrame to pandas")
-
-    sample_df.ww.init(name="woodwork", index="id")
-
-    if _is_dask_dataframe(sample_df):
-        pd_df = sample_df.ww.compute()
-    elif _is_spark_dataframe(sample_df):
-        pd_df = sample_df.ww.to_pandas()
-        pytest.skip(
-            "Bug #1071: Woodwork not initialized after to_pandas call with Spark categorical column",
-        )
-    assert isinstance(pd_df, pd.DataFrame)
-    assert pd_df.ww.index == "id"
-    assert pd_df.ww.name == "woodwork"
+    pd.testing.assert_index_equal(schema_df.ww.keys(), schema_df.keys())
 
 
 def test_get_subset_df_with_schema(sample_df):
@@ -1620,21 +1528,21 @@ def test_get_subset_df_with_schema(sample_df):
     empty_df = schema_df.ww._get_subset_df_with_schema([])
     assert len(empty_df.columns) == 0
     assert empty_df.ww.schema is not None
-    pd.testing.assert_frame_equal(to_pandas(empty_df), to_pandas(schema_df[[]]))
+    pd.testing.assert_frame_equal(empty_df, schema_df[[]])
     validate_subset_schema(empty_df.ww.schema, schema)
 
     just_index = schema_df.ww._get_subset_df_with_schema(["id"])
     assert just_index.ww.index == schema.index
     assert just_index.ww.time_index is None
-    pd.testing.assert_frame_equal(to_pandas(just_index), to_pandas(schema_df[["id"]]))
+    pd.testing.assert_frame_equal(just_index, schema_df[["id"]])
     validate_subset_schema(just_index.ww.schema, schema)
 
     just_time_index = schema_df.ww._get_subset_df_with_schema(["signup_date"])
     assert just_time_index.ww.time_index == schema.time_index
     assert just_time_index.ww.index is None
     pd.testing.assert_frame_equal(
-        to_pandas(just_time_index),
-        to_pandas(schema_df[["signup_date"]]),
+        just_time_index,
+        schema_df[["signup_date"]],
     )
     validate_subset_schema(just_time_index.ww.schema, schema)
 
@@ -1642,8 +1550,8 @@ def test_get_subset_df_with_schema(sample_df):
     assert transfer_schema.ww.index is None
     assert transfer_schema.ww.time_index is None
     pd.testing.assert_frame_equal(
-        to_pandas(transfer_schema),
-        to_pandas(schema_df[["phone_number"]]),
+        transfer_schema,
+        schema_df[["phone_number"]],
     )
     validate_subset_schema(transfer_schema.ww.schema, schema)
 
@@ -1659,7 +1567,7 @@ def test_select_ltypes_no_match_and_all(sample_df, sample_correct_logical_types)
     assert len(schema_df.ww.select(exclude=all_types).columns) == 0
 
     df_all_types = schema_df.ww.select(all_types)
-    pd.testing.assert_frame_equal(to_pandas(df_all_types), to_pandas(schema_df))
+    pd.testing.assert_frame_equal(df_all_types, schema_df)
     assert df_all_types.ww.schema == schema_df.ww.schema
 
 
@@ -2025,8 +1933,6 @@ def test_select_return_schema(sample_df):
     ],
 )
 def test_select_retains_column_order(ww_type, pandas_type, sample_df):
-    if _is_spark_dataframe(sample_df) and pandas_type in ["category", "string"]:
-        pytest.skip("Spark stores categories as strings")
     sample_df.ww.init()
 
     ww_schema_column_order = [
@@ -2060,22 +1966,16 @@ def test_accessor_set_index(sample_df):
 
     sample_df.ww.set_index("id")
     assert sample_df.ww.index == "id"
-    if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Spark
-        assert (sample_df.index == sample_df["id"]).all()
+    assert (sample_df.index == sample_df["id"]).all()
 
     sample_df.ww.set_index("full_name")
     assert sample_df.ww.index == "full_name"
-    if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Spark
-        assert (sample_df.index == sample_df["full_name"]).all()
+    assert (sample_df.index == sample_df["full_name"]).all()
 
     sample_df.ww.set_index(None)
     assert sample_df.ww.index is None
-    if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Spark
-        # Check that underlying index doesn't get reset when Woodwork index is removed
-        assert (sample_df.index == sample_df["full_name"]).all()
+    # Check that underlying index doesn't get reset when Woodwork index is removed
+    assert (sample_df.index == sample_df["full_name"]).all()
 
 
 def test_accessor_set_index_errors(sample_df):
@@ -2085,11 +1985,9 @@ def test_accessor_set_index_errors(sample_df):
     with pytest.raises(ColumnNotPresentError, match=error):
         sample_df.ww.set_index("testing")
 
-    if isinstance(sample_df, pd.DataFrame):
-        # Index uniqueness not validate for Dask/Spark
-        error = "Index column must be unique"
-        with pytest.raises(LookupError, match=error):
-            sample_df.ww.set_index("age")
+    error = "Index column must be unique"
+    with pytest.raises(LookupError, match=error):
+        sample_df.ww.set_index("age")
 
 
 def test_set_types(sample_df):
@@ -2103,7 +2001,7 @@ def test_set_types(sample_df):
 
     sample_df.ww.set_types()
     assert original_df.ww.schema == sample_df.ww.schema
-    pd.testing.assert_frame_equal(to_pandas(original_df), to_pandas(sample_df))
+    pd.testing.assert_frame_equal(original_df, sample_df)
 
     sample_df.ww.set_types(logical_types={"is_registered": "IntegerNullable"})
     assert sample_df["is_registered"].dtype == "Int64"
@@ -2125,16 +2023,13 @@ def test_set_types_errors(sample_df):
     with pytest.raises(ValueError, match=error):
         sample_df.ww.set_types(logical_types={"id": "invalid"})
 
-    if isinstance(sample_df, pd.DataFrame):
-        # Dask does not error on invalid type conversion until compute
-        # Spark does conversion and fills values with NaN
-        error = (
-            "Error converting datatype for email from type string "
-            "to type float64. Please confirm the underlying data is consistent with "
-            "logical type Double."
-        )
-        with pytest.raises(TypeConversionError, match=error):
-            sample_df.ww.set_types(logical_types={"email": "Double"})
+    error = (
+        "Error converting datatype for email from type string "
+        "to type float64. Please confirm the underlying data is consistent with "
+        "logical type Double."
+    )
+    with pytest.raises(TypeConversionError, match=error):
+        sample_df.ww.set_types(logical_types={"email": "Double"})
 
     error = re.escape(
         "Cannot add 'index' tag directly for column email. To set a column as the index, "
@@ -2154,7 +2049,7 @@ def test_pop(sample_df):
     assert isinstance(popped_series, type(sample_df["age"]))
     assert popped_series.ww.semantic_tags == {"custom_tag", "numeric"}
     pd.testing.assert_series_equal(
-        to_pandas(popped_series),
+        popped_series,
         pd.Series([pd.NA, 33, 33, 57], dtype="Int64", name="age"),
     )
     assert isinstance(popped_series.ww.logical_type, IntegerNullable)
@@ -2212,23 +2107,15 @@ def test_accessor_drop(sample_df):
     single_input_df = schema_df.ww.drop("is_registered")
     assert len(single_input_df.ww.columns) == (len(schema_df.columns) - 1)
     assert "is_registered" not in single_input_df.ww.columns
-    assert (
-        to_pandas(schema_df)
-        .drop("is_registered", axis="columns")
-        .equals(to_pandas(single_input_df))
-    )
+    assert schema_df.drop("is_registered", axis="columns").equals(single_input_df)
 
     list_input_df = schema_df.ww.drop(["is_registered"])
     assert len(list_input_df.ww.columns) == (len(schema_df.columns) - 1)
     assert "is_registered" not in list_input_df.ww.columns
-    assert (
-        to_pandas(schema_df)
-        .drop("is_registered", axis="columns")
-        .equals(to_pandas(list_input_df))
-    )
+    assert schema_df.drop("is_registered", axis="columns").equals(list_input_df)
     # should be equal to the single input example above
     assert single_input_df.ww.schema == list_input_df.ww.schema
-    assert to_pandas(single_input_df).equals(to_pandas(list_input_df))
+    assert single_input_df.equals(list_input_df)
 
     multiple_list_df = schema_df.ww.drop(["age", "full_name", "is_registered"])
     assert len(multiple_list_df.ww.columns) == (len(schema_df.columns) - 3)
@@ -2236,16 +2123,14 @@ def test_accessor_drop(sample_df):
     assert "full_name" not in multiple_list_df.ww.columns
     assert "age" not in multiple_list_df.ww.columns
 
-    assert (
-        to_pandas(schema_df)
-        .drop(["is_registered", "age", "full_name"], axis="columns")
-        .equals(to_pandas(multiple_list_df))
+    assert schema_df.drop(["is_registered", "age", "full_name"], axis="columns").equals(
+        multiple_list_df,
     )
 
     # Drop the same columns in a different order and confirm resulting DataFrame column order doesn't change
     different_order_df = schema_df.ww.drop(["is_registered", "age", "full_name"])
     assert different_order_df.ww.schema == multiple_list_df.ww.schema
-    assert to_pandas(multiple_list_df).equals(to_pandas(different_order_df))
+    assert multiple_list_df.equals(different_order_df)
 
 
 def test_accessor_drop_inplace(sample_df):
@@ -2253,20 +2138,11 @@ def test_accessor_drop_inplace(sample_df):
     inplace_df = sample_df.copy()
     inplace_df.ww.init()
 
-    if _is_dask_dataframe(sample_df):
-        error = "Drop inplace not supported for Dask"
-        with pytest.raises(ValueError, match=error):
-            inplace_df.ww.drop(["is_registered"], inplace=True)
-    elif _is_spark_dataframe(sample_df):
-        error = "Drop inplace not supported for Spark"
-        with pytest.raises(ValueError, match=error):
-            inplace_df.ww.drop(["is_registered"], inplace=True)
-    else:
-        inplace_df.ww.drop(["is_registered"], inplace=True)
-        assert len(inplace_df.ww.columns) == (len(sample_df.columns) - 1)
-        assert "is_registered" not in inplace_df.ww.columns
+    inplace_df.ww.drop(["is_registered"], inplace=True)
+    assert len(inplace_df.ww.columns) == (len(sample_df.columns) - 1)
+    assert "is_registered" not in inplace_df.ww.columns
 
-        assert sample_df.drop("is_registered", axis="columns").equals(inplace_df)
+    assert sample_df.drop("is_registered", axis="columns").equals(inplace_df)
 
 
 def test_accessor_drop_indices(sample_df):
@@ -2318,22 +2194,20 @@ def test_accessor_rename(sample_df):
     rename_dict = {"age": "birthday"}
     new_df = sample_df.ww.rename(rename_dict)
 
-    assert to_pandas(sample_df.rename(columns=rename_dict)).equals(
-        to_pandas(new_df),
-    )
+    assert sample_df.rename(columns=rename_dict).equals(new_df)
     expected_schema_order = [
         rename_dict.get(name, name) for name in list(sample_df.columns)
     ]
     assert list(new_df.ww.schema.columns.keys()) == expected_schema_order
 
     # Confirm original dataframe hasn't changed
-    assert to_pandas(sample_df).equals(to_pandas(original_df))
+    assert sample_df.equals(original_df)
     assert sample_df.ww.schema == original_df.ww.schema
 
     assert original_df.columns.get_loc("age") == new_df.columns.get_loc("birthday")
     pd.testing.assert_series_equal(
-        to_pandas(original_df["age"]),
-        to_pandas(new_df["birthday"]),
+        original_df["age"],
+        new_df["birthday"],
         check_names=False,
     )
 
@@ -2350,13 +2224,13 @@ def test_accessor_rename(sample_df):
     new_df = sample_df.ww.rename({"age": "full_name", "full_name": "age"})
 
     pd.testing.assert_series_equal(
-        to_pandas(original_df["age"]),
-        to_pandas(new_df["full_name"]),
+        original_df["age"],
+        new_df["full_name"],
         check_names=False,
     )
     pd.testing.assert_series_equal(
-        to_pandas(original_df["full_name"]),
-        to_pandas(new_df["age"]),
+        original_df["full_name"],
+        new_df["age"],
         check_names=False,
     )
 
@@ -2380,53 +2254,43 @@ def test_accessor_rename_inplace(sample_df):
     original_df = sample_df.ww.copy()
     inplace_df = sample_df.ww.copy()
 
-    if _is_dask_dataframe(sample_df):
-        error = "Rename inplace not supported for Dask"
-        with pytest.raises(ValueError, match=error):
-            inplace_df.ww.rename({"age": "birthday"}, inplace=True)
-    elif _is_spark_dataframe(sample_df):
-        error = "Rename inplace not supported for Spark"
-        with pytest.raises(ValueError, match=error):
-            inplace_df.ww.rename({"age": "birthday"}, inplace=True)
+    inplace_df.ww.rename({"age": "birthday"}, inplace=True)
 
-    else:
-        inplace_df.ww.rename({"age": "birthday"}, inplace=True)
+    assert original_df.columns.get_loc("age") == inplace_df.columns.get_loc(
+        "birthday",
+    )
+    pd.testing.assert_series_equal(
+        original_df["age"],
+        inplace_df["birthday"],
+        check_names=False,
+    )
 
-        assert original_df.columns.get_loc("age") == inplace_df.columns.get_loc(
-            "birthday",
-        )
-        pd.testing.assert_series_equal(
-            to_pandas(original_df["age"]),
-            to_pandas(inplace_df["birthday"]),
-            check_names=False,
-        )
+    # confirm that metadata and descriptions are there
+    assert inplace_df.ww.metadata == table_metadata
+    assert inplace_df.ww.columns["id"].description == id_description
+    assert inplace_df.ww.columns["id"].origin == id_origin
 
-        # confirm that metadata and descriptions are there
-        assert inplace_df.ww.metadata == table_metadata
-        assert inplace_df.ww.columns["id"].description == id_description
-        assert inplace_df.ww.columns["id"].origin == id_origin
+    old_col = sample_df.ww.columns["age"]
+    new_col = inplace_df.ww.columns["birthday"]
+    assert old_col.logical_type == new_col.logical_type
+    assert old_col.semantic_tags == new_col.semantic_tags
 
-        old_col = sample_df.ww.columns["age"]
-        new_col = inplace_df.ww.columns["birthday"]
-        assert old_col.logical_type == new_col.logical_type
-        assert old_col.semantic_tags == new_col.semantic_tags
+    new_df = sample_df.ww.copy()
+    new_df.ww.rename({"age": "full_name", "full_name": "age"}, inplace=True)
 
-        new_df = sample_df.ww.copy()
-        new_df.ww.rename({"age": "full_name", "full_name": "age"}, inplace=True)
+    pd.testing.assert_series_equal(
+        original_df["age"],
+        new_df["full_name"],
+        check_names=False,
+    )
+    pd.testing.assert_series_equal(
+        original_df["full_name"],
+        new_df["age"],
+        check_names=False,
+    )
 
-        pd.testing.assert_series_equal(
-            to_pandas(original_df["age"]),
-            to_pandas(new_df["full_name"]),
-            check_names=False,
-        )
-        pd.testing.assert_series_equal(
-            to_pandas(original_df["full_name"]),
-            to_pandas(new_df["age"]),
-            check_names=False,
-        )
-
-        assert original_df.columns.get_loc("age") == new_df.columns.get_loc("full_name")
-        assert original_df.columns.get_loc("full_name") == new_df.columns.get_loc("age")
+    assert original_df.columns.get_loc("age") == new_df.columns.get_loc("full_name")
+    assert original_df.columns.get_loc("full_name") == new_df.columns.get_loc("age")
 
 
 def test_accessor_rename_indices(sample_df):
@@ -2439,10 +2303,7 @@ def test_accessor_rename_indices(sample_df):
     assert "signup_date" not in renamed_df.columns
     assert "renamed_index" in renamed_df.columns
     assert "renamed_time_index" in renamed_df.columns
-
-    if isinstance(sample_df, pd.DataFrame):
-        # underlying index not set for Dask/Spark
-        assert all(renamed_df.index == renamed_df["renamed_index"])
+    assert all(renamed_df.index == renamed_df["renamed_index"])
 
     assert renamed_df.ww.index == "renamed_index"
     assert renamed_df.ww.time_index == "renamed_time_index"
@@ -2467,13 +2328,6 @@ def test_accessor_schema_properties(sample_df):
         # Assumes we don't have setters for any of these attributes
         with pytest.raises(AttributeError):
             setattr(sample_df.ww, schema_property, "new_value")
-
-
-def test_sets_spark_option_on_init(sample_df_spark):
-    if ps:
-        ps.set_option("compute.ops_on_diff_frames", False)
-        sample_df_spark.ww.init()
-        assert ps.get_option("compute.ops_on_diff_frames") is True
 
 
 def test_setitem_invalid_input(sample_df):
@@ -2559,8 +2413,6 @@ def test_setitem_different_name(sample_df):
     df.ww.init()
 
     new_series = pd.Series([1, 2, 3, 4], name="wrong", dtype="float")
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
 
     # Assign series with name `wrong` to existing column with name `id`
     df.ww["id"] = new_series
@@ -2570,8 +2422,6 @@ def test_setitem_different_name(sample_df):
     assert "wrong" not in df.columns
 
     new_series2 = pd.Series([1, 2, 3, 4], name="wrong2", dtype="float")
-    if _is_spark_dataframe(sample_df):
-        new_series2 = ps.Series(new_series2)
 
     # Assign series with name `wrong2` to new column with name `new_col`
     df.ww["new_col"] = new_series2
@@ -2586,8 +2436,6 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=False)
 
     new_series = pd.Series([1, 2, 3, 4])
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
     dtype = "int64"
 
     df.ww["test_col2"] = new_series
@@ -2600,8 +2448,6 @@ def test_setitem_new_column(sample_df):
     assert df.ww["test_col2"].dtype == dtype
 
     new_series = pd.Series([1, 2, 3], dtype="float")
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2623,11 +2469,7 @@ def test_setitem_new_column(sample_df):
     df.ww.init(use_standard_tags=True)
 
     new_series = pd.Series(["new", "column", "inserted"], name="test_col")
-    if _is_spark_dataframe(sample_df):
-        dtype = "string"
-        new_series = ps.Series(new_series)
-    else:
-        dtype = "category"
+    dtype = "category"
 
     new_series = init_series(new_series, logical_type="Categorical")
     df.ww["test_col"] = new_series
@@ -2646,8 +2488,6 @@ def test_setitem_overwrite_column(sample_df):
     # Change to column no change in types
     original_col = df.ww["age"]
     new_series = pd.Series([1, 2, 3, None], dtype="Int64")
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
 
     dtype = "Int64"
     new_series = init_series(new_series, use_standard_tags=True)
@@ -2663,8 +2503,6 @@ def test_setitem_overwrite_column(sample_df):
     # Change dtype, logical types, and tags with conflicting use_standard_tags
     original_col = df["full_name"]
     new_series = pd.Series([0, 1, 2], dtype="float")
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2687,8 +2525,6 @@ def test_setitem_overwrite_column(sample_df):
 
     original_col = df["full_name"]
     new_series = pd.Series([0, 1, 2], dtype="float")
-    if _is_spark_dataframe(sample_df):
-        new_series = ps.Series(new_series)
 
     new_series = init_series(
         new_series,
@@ -2795,10 +2631,9 @@ def test_maintain_column_order_of_input(sample_df):
 
     reversed_cols = list(schema_df.columns[::-1])
 
-    if not _is_dask_dataframe(sample_df):
-        iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
-        assert all(reversed_cols == iloc_df.columns)
-        assert all(reversed_cols == iloc_df.ww.types.index)
+    iloc_df = schema_df.ww.iloc[:, list(range(len(schema_df.columns)))[::-1]]
+    assert all(reversed_cols == iloc_df.columns)
+    assert all(reversed_cols == iloc_df.ww.types.index)
 
     loc_df = schema_df.ww.loc[:, reversed_cols]
     assert all(reversed_cols == loc_df.columns)
@@ -2843,8 +2678,6 @@ def test_accessor_types(sample_df, sample_inferred_logical_types):
         name: ltype.primary_dtype
         for name, ltype in sample_inferred_logical_types.items()
     }
-    if _is_spark_dataframe(sample_df):
-        correct_physical_types["categorical"] = "string"
     correct_physical_types = pd.Series(
         list(correct_physical_types.values()),
         index=list(correct_physical_types.keys()),
@@ -2950,12 +2783,10 @@ def test_validation_methods_called(mock_validate_accessor_params, sample_df):
     assert mock_validate_accessor_params.called
 
     assert validated_df.ww == not_validated_df.ww
-    pd.testing.assert_frame_equal(to_pandas(validated_df), to_pandas(not_validated_df))
+    pd.testing.assert_frame_equal(validated_df, not_validated_df)
 
 
 def test_maintains_set_logical_type(sample_df):
-    if _is_spark_dataframe(sample_df):
-        pytest.xfail("Spark changed dtype on fillna which invalidates schema")
     sample_df.ww.init(logical_types={"age": "IntegerNullable"})
     assert isinstance(sample_df.ww.logical_types["age"], IntegerNullable)
     new_df = sample_df.ww.fillna({"age": -1})
@@ -3123,8 +2954,6 @@ def test_validate_unique_index_with_partial_schema():
 
 
 def test_falsy_columns_in_partial_schema(falsy_names_df):
-    if _is_dask_dataframe(falsy_names_df):
-        pytest.xfail("Dask DataFrames cannot handle integer column names")
     new_df = falsy_names_df.copy()
 
     falsy_names_df.ww.init(name="df_name")
@@ -3179,9 +3008,7 @@ def test_validate_logical_types(sample_df):
         },
     )
 
-    if _is_spark_dataframe(df):
-        invalid_df = ps.from_pandas(invalid_df)
-    df = concat_dataframe_or_series(df, invalid_df)
+    df = pd.concat(df, invalid_df)
 
     df.ww.init(
         logical_types={
@@ -3213,7 +3040,7 @@ def test_validate_logical_types(sample_df):
     )
 
     actual = df.ww.validate_logical_types(return_invalid_values=True)
-    actual = to_pandas(actual).sort_index()
+    actual = actual.sort_index()
     assert actual.equals(expected)
 
     # test case for empty list of invalid values

@@ -26,26 +26,6 @@ from woodwork.type_sys.type_system import (
     DEFAULT_TYPE,
     TypeSystem,
 )
-from woodwork.utils import import_or_none
-
-UNSUPPORTED_SPARK_DTYPES = [
-    "int32",
-    "intp",
-    "uint8",
-    "uint16",
-    "uint32",
-    "uint64",
-    "uintp",
-    "float_",
-    "object",
-    "category",
-]
-
-ps = import_or_none("pyspark.pandas")
-
-
-def get_spark_dtypes(dtypes):
-    return [dtype for dtype in dtypes if dtype not in UNSUPPORTED_SPARK_DTYPES]
 
 
 def test_integer_inference(integers):

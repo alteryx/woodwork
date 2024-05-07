@@ -6,10 +6,7 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import (
-    _is_dask_dataframe,
-    _is_dask_series,
     _is_dataframe,
-    _is_spark_series,
     init_series,
 )
 from woodwork.column_accessor import WoodworkColumnAccessor
@@ -34,15 +31,9 @@ from woodwork.logical_types import (
     SubRegionCode,
 )
 from woodwork.tests.testing_utils import (
-    concat_dataframe_or_series,
     is_property,
     is_public_method,
-    to_pandas,
 )
-from woodwork.utils import import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
 
 
 def test_accessor_init(sample_series):
@@ -96,12 +87,8 @@ def test_accessor_init_with_schema_errors(sample_series):
     with pytest.raises(TypeError, match=error):
         head_series.ww.init(schema=int)
 
-    if _is_spark_series(sample_series):
-        ltype_dtype = "string"
-        new_dtype = "<U0"
-    else:
-        ltype_dtype = "category"
-        new_dtype = "string"
+    ltype_dtype = "category"
+    new_dtype = "string"
 
     error = re.escape(
         f"dtype mismatch between Series dtype {new_dtype}, and Categorical dtype, {ltype_dtype}",
@@ -161,12 +148,7 @@ def test_accessor_init_with_logical_type(sample_series):
 
 
 def test_accessor_init_with_invalid_logical_type(sample_series):
-    if _is_spark_series(sample_series):
-        series_dtype = "<U0"
-    elif _is_dask_series(sample_series):
-        series_dtype = "int64"
-    else:
-        series_dtype = "object"
+    series_dtype = "object"
     series = sample_series.astype(series_dtype)
     correct_dtype = "string"
     error_message = re.escape(
@@ -330,11 +312,7 @@ def test_origin_error_on_update(sample_series):
 
 def test_accessor_repr(sample_series):
     sample_series.ww.init(use_standard_tags=False)
-    # Spark doesn't support categorical
-    if _is_spark_series(sample_series):
-        dtype = "string"
-    else:
-        dtype = "category"
+    dtype = "category"
     assert (
         sample_series.ww.__repr__()
         == f"<Series: sample_series (Physical Type = {dtype}) "
@@ -442,11 +420,7 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 
     new_series = sample_series.ww.set_logical_type("NaturalLanguage")
 
-    if _is_spark_series(sample_series):
-        # Spark uses string dtype for Categorical
-        original_dtype = "string"
-    else:
-        original_dtype = "category"
+    original_dtype = "category"
     new_dtype = "string"
 
     assert isinstance(sample_series.ww.logical_type, Categorical)
@@ -456,15 +430,6 @@ def test_set_logical_type_valid_dtype_change(sample_series):
 
 
 def test_set_logical_type_invalid_dtype_change(sample_series):
-    if _is_dask_series(sample_series):
-        pytest.xfail(
-            "Dask type conversion with astype does not fail until compute is called",
-        )
-    if _is_spark_series(sample_series):
-        pytest.xfail(
-            "Spark allows this conversion, filling values it cannot convert with NaN "
-            "and converting dtype to float.",
-        )
     sample_series.ww.init(logical_type="Categorical")
     error_message = (
         "Error converting datatype for sample_series from type category to "
@@ -498,7 +463,7 @@ def test_series_methods_on_accessor(sample_series):
     copied_series = sample_series.ww.copy()
     assert copied_series is not sample_series
     assert copied_series.ww.schema == sample_series.ww.schema
-    pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
+    pd.testing.assert_series_equal(sample_series, copied_series)
 
 
 def test_series_methods_on_accessor_without_standard_tags(sample_series):
@@ -507,23 +472,16 @@ def test_series_methods_on_accessor_without_standard_tags(sample_series):
     copied_series = sample_series.ww.copy()
     assert copied_series is not sample_series
     assert copied_series.ww.schema == sample_series.ww.schema
-    pd.testing.assert_series_equal(to_pandas(sample_series), to_pandas(copied_series))
+    pd.testing.assert_series_equal(sample_series, copied_series)
 
 
 def test_series_methods_on_accessor_returning_series_valid_schema(sample_series):
-    if _is_spark_series(sample_series):
-        pytest.xfail(
-            "Running replace on Spark series changes series dtype to object, invalidating schema",
-        )
     sample_series.ww.init()
 
     replace_series = sample_series.ww.replace("a", "d")
     assert replace_series.ww._schema == sample_series.ww._schema
     assert replace_series.ww._schema is not sample_series.ww._schema
-    pd.testing.assert_series_equal(
-        to_pandas(replace_series),
-        to_pandas(sample_series.replace("a", "d")),
-    )
+    pd.testing.assert_series_equal(replace_series, sample_series.replace("a", "d"))
 
 
 def test_series_methods_on_accessor_dtype_mismatch(sample_df):
@@ -544,9 +502,6 @@ def test_series_methods_on_accessor_dtype_mismatch(sample_df):
 
 
 def test_series_methods_on_accessor_inplace(sample_series):
-    # TODO: Try to find a supported inplace method for Dask, if one exists
-    if _is_dask_series(sample_series):
-        pytest.xfail("Dask does not support pop.")
     comparison_series = sample_series.copy()
 
     sample_series.ww.init()
@@ -561,13 +516,8 @@ def test_series_methods_on_accessor_inplace(sample_series):
 def test_series_methods_on_accessor_returning_series_invalid_schema(sample_series):
     sample_series.ww.init()
 
-    if _is_spark_series(sample_series):
-        # Spark uses `string` for Categorical, so must try a different conversion
-        original_type = "string"
-        new_type = "Int64"
-    else:
-        original_type = "category"
-        new_type = "string"
+    original_type = "category"
+    new_type = "string"
 
     warning = (
         "Operation performed by astype has invalidated the Woodwork typing information:\n "
@@ -585,18 +535,12 @@ def test_series_methods_on_accessor_other_returns(sample_series):
     sample_series.ww.init()
     col_shape = sample_series.ww.shape
     series_shape = sample_series.shape
-    if _is_dask_series(sample_series):
-        col_shape = (col_shape[0].compute(),)
-        series_shape = (series_shape[0].compute(),)
     assert col_shape == (len(sample_series),)
     assert col_shape == series_shape
 
     assert sample_series.name == sample_series.ww.name
     series_nunique = sample_series.nunique()
     ww_nunique = sample_series.ww.nunique()
-    if _is_dask_series(sample_series):
-        series_nunique = series_nunique.compute()
-        ww_nunique = ww_nunique.compute()
     assert series_nunique == ww_nunique
 
 
@@ -652,11 +596,6 @@ def test_ordinal_requires_instance_on_update(sample_series):
 
 
 def test_ordinal_with_order(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not compatible",
-        )
-
     series = sample_series.copy()
     ordinal_with_order = Ordinal(order=["a", "b", "c"])
     series.ww.init(logical_type=ordinal_with_order)
@@ -671,11 +610,6 @@ def test_ordinal_with_order(sample_series):
 
 
 def test_ordinal_with_incomplete_ranking(sample_series):
-    if _is_spark_series(sample_series) or _is_dask_series(sample_series):
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported",
-        )
-
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
@@ -712,19 +646,12 @@ def test_latlong_init_error_with_invalid_series(latlongs):
 
 def test_latlong_formatting_with_init_series(latlongs):
     expected_series = pd.Series([(1.0, 2.0), (3.0, 4.0)])
-    if _is_dask_series(latlongs[0]):
-        expected_series = dd.from_pandas(expected_series, npartitions=2)
-    elif _is_spark_series(latlongs[0]):
-        expected_series = ps.Series([[1.0, 2.0], [3.0, 4.0]])
 
     expected_series.ww.init(logical_type=LatLong)
     for series in latlongs:
         new_series = init_series(series, logical_type=LatLong)
         assert isinstance(new_series.ww.logical_type, LatLong)
-        pd.testing.assert_series_equal(
-            to_pandas(new_series),
-            to_pandas(expected_series),
-        )
+        pd.testing.assert_series_equal(new_series, expected_series)
         assert expected_series.ww._schema == new_series.ww._schema
 
 
@@ -892,7 +819,7 @@ def test_validation_methods_called_init(mock_validate, sample_series):
 
     assert not mock_validate.called
     assert validated.ww == not_validated.ww
-    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+    pd.testing.assert_series_equal(validated, not_validated)
 
 
 @patch("woodwork.logical_types.LogicalType.validate")
@@ -909,7 +836,7 @@ def test_ordinal_validation_methods_called_init(mock_validate, sample_series):
 
     assert mock_validate.called
     assert validated.ww == not_validated.ww
-    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+    pd.testing.assert_series_equal(validated, not_validated)
 
 
 @patch("woodwork.logical_types.LogicalType.validate")
@@ -927,7 +854,7 @@ def test_latlong_validation_methods_called_init(mock_validate, latlong_df_pandas
 
     assert mock_validate.called
     assert validated.ww == not_validated.ww
-    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+    pd.testing.assert_series_equal(validated, not_validated)
 
 
 @patch("woodwork.column_accessor._validate_schema")
@@ -950,7 +877,7 @@ def test_validation_methods_called_init_with_schema(
 
     assert mock_validate_schema.called
     assert validated.ww == not_validated.ww
-    pd.testing.assert_series_equal(to_pandas(validated), to_pandas(not_validated))
+    pd.testing.assert_series_equal(validated, not_validated)
 
 
 def test_series_methods_returning_frame(sample_series):
@@ -986,10 +913,7 @@ def test_series_methods_returning_frame_no_name(sample_series):
 
     assert _is_dataframe(sample_frame)
     assert sample_frame.ww.schema is not None
-    if isinstance(sample_frame, pd.DataFrame) or _is_dask_dataframe(sample_frame):
-        assert sample_frame.ww.columns[0] == sample_series.ww.schema
-    else:
-        assert list(sample_frame.ww.columns.values())[0] == sample_series.ww.schema
+    assert sample_frame.ww.columns[0] == sample_series.ww.schema
 
     reset_index_frame = sample_series.ww.reset_index(drop=False)
     assert _is_dataframe(reset_index_frame)
@@ -1033,10 +957,7 @@ def test_validate_logical_type(sample_df):
 
     invalid_row = pd.Series({4: "bad_email"}, name="email", dtype="string")
 
-    if _is_spark_series(series):
-        invalid_row = ps.from_pandas(invalid_row)
-
-    series = concat_dataframe_or_series(series, invalid_row)
+    series = pd.concat(series, invalid_row)
     series = init_series(series, logical_type="EmailAddress")
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
@@ -1046,4 +967,4 @@ def test_validate_logical_type(sample_df):
 
     actual = series.ww.validate_logical_type(return_invalid_values=True)
     expected = pd.Series({4: "bad_email"}, dtype="string")
-    assert to_pandas(actual).equals(expected)
+    assert actual.equals(expected)

@@ -6,13 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from woodwork.accessor_utils import (
-    _is_dask_dataframe,
-    _is_dask_series,
-    _is_spark_dataframe,
-    _is_spark_series,
-    init_series,
-)
+from woodwork.accessor_utils import init_series
 from woodwork.config import config
 from woodwork.exceptions import (
     TypeConversionError,
@@ -39,13 +33,6 @@ from woodwork.logical_types import (
     Unknown,
     _replace_nans,
 )
-from woodwork.tests.testing_utils.table_utils import (
-    concat_dataframe_or_series,
-    to_pandas,
-)
-from woodwork.utils import import_or_none
-
-ps = import_or_none("pyspark.pandas")
 
 
 def test_logical_eq():
@@ -109,38 +96,15 @@ def test_ordinal_transform_pandas(ordinal_transform_series_pandas) -> None:
     pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
 
 
-def test_ordinal_transform_dask(ordinal_transform_series_dask) -> None:
-    order = [2, 1, 3]
-    typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_dask).compute()
-
-    assert ser_.dtype == "category"
-    pd.testing.assert_index_equal(ser_.cat.categories, pd.Index(order, dtype="int64"))
-
-
-def test_ordinal_transform_spark(ordinal_transform_series_spark) -> None:
-    order = [2, 1, 3]
-    typ = Ordinal(order=order)
-    ser_ = typ.transform(ordinal_transform_series_spark)
-
-    assert ser_.dtype == pd.StringDtype()
-
-
 def test_get_valid_dtype(sample_series):
     valid_dtype = Categorical._get_valid_dtype(type(sample_series))
-    if _is_spark_series(sample_series):
-        assert valid_dtype == "string"
-    else:
-        assert valid_dtype == "category"
+    assert valid_dtype == "category"
 
     valid_dtype = Boolean._get_valid_dtype(type(sample_series))
     assert valid_dtype == "bool"
 
 
 def test_latlong_transform(latlong_df):
-    df_type = str(type(latlong_df))
-    dask = "dask" in df_type
-    spark = "spark" in df_type
     nan = float("nan")
 
     expected_data = {
@@ -160,11 +124,6 @@ def test_latlong_transform(latlong_df):
         series = latlong_df[column]
         actual = latlong.transform(series)
 
-        if dask:
-            actual = actual.compute()
-        elif spark:
-            actual = actual.to_pandas()
-
         expected = pd.Series(expected_data[column], name=column)
         pd.testing.assert_series_equal(actual, expected)
 
@@ -173,11 +132,6 @@ def test_latlong_transform_empty_series(empty_latlong_df):
     latlong = LatLong()
     series = empty_latlong_df["latlong"]
     actual = latlong.transform(series)
-
-    if _is_dask_series(actual):
-        actual = actual.compute()
-    elif _is_spark_series(actual):
-        actual = actual.to_pandas()
 
     assert actual.empty
     assert actual.name == "latlong"
@@ -240,15 +194,6 @@ def test_datetime_coerce_user_format():
 
 
 def test_ordinal_transform(sample_series):
-    series_type = str(type(sample_series))
-    dask = "dask" in series_type
-    spark = "spark" in series_type
-
-    if dask or spark:
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported",
-        )
-
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
@@ -260,15 +205,6 @@ def test_ordinal_transform(sample_series):
 
 
 def test_ordinal_validate(sample_series):
-    series_type = str(type(sample_series))
-    dask = "dask" in series_type
-    spark = "spark" in series_type
-
-    if dask or spark:
-        pytest.xfail(
-            "Fails with Dask and Spark - ordinal data validation not supported",
-        )
-
     ordinal_incomplete_order = Ordinal(order=["a", "b"])
     error_msg = re.escape(
         "Ordinal column sample_series contains values that are not "
@@ -292,12 +228,9 @@ def test_email_address_validate(sample_df):
     series = sample_df["email"].astype(dtype)
     invalid_row = pd.Series({4: "bad_email"}, name="email").astype(dtype)
 
-    if _is_spark_series(series):
-        invalid_row = ps.from_pandas(invalid_row)
-
     assert email_address.validate(series) is None
 
-    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+    series = pd.concat([series, invalid_row]).astype(dtype)
 
     match = "Series email contains invalid email address values. "
     match += "The email_inference_regex can be changed in the config if needed."
@@ -307,7 +240,7 @@ def test_email_address_validate(sample_df):
 
     actual = email_address.validate(series, return_invalid_values=True)
     expected = pd.Series({4: "bad_email"}, name="email").astype(dtype)
-    assert to_pandas(actual).equals(expected)
+    assert actual.equals(expected)
 
 
 def test_url_validate(sample_df):
@@ -315,12 +248,10 @@ def test_url_validate(sample_df):
     dtype = logical_type.primary_dtype
     series = sample_df["url"].astype(dtype)
     invalid_row = pd.Series({4: "bad_url"}, name="url").astype(dtype)
-    if _is_spark_series(series):
-        invalid_row = ps.from_pandas(invalid_row)
 
     assert logical_type.validate(series) is None
 
-    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+    series = pd.concat([series, invalid_row]).astype(dtype)
 
     match = "Series url contains invalid url values. "
     match += "The url_inference_regex can be changed in the config if needed."
@@ -330,7 +261,7 @@ def test_url_validate(sample_df):
 
     actual = logical_type.validate(series, return_invalid_values=True)
     expected = pd.Series({4: "bad_url"}, name="url").astype(dtype)
-    assert to_pandas(actual).equals(expected)
+    assert actual.equals(expected)
 
 
 @pytest.mark.parametrize(
@@ -349,17 +280,14 @@ def test_age_validate(sample_df, logical_type):
     assert logical_type.validate(series, return_invalid_values=False) is None
     invalid_row = pd.Series({4: -3}, name="age", dtype=dtype)
 
-    if _is_spark_series(series):
-        invalid_row = ps.from_pandas(invalid_row)
-
-    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+    series = pd.concat([series, invalid_row]).astype(dtype)
 
     match = "Series age contains negative values."
     with pytest.raises(TypeValidationError, match=match):
         logical_type.validate(series, return_invalid_values=False)
 
     actual = logical_type.validate(series, return_invalid_values=True)
-    assert to_pandas(actual).equals(to_pandas(invalid_row))
+    assert actual.equals(invalid_row)
 
 
 def test_phone_number_validate(sample_df):
@@ -368,12 +296,9 @@ def test_phone_number_validate(sample_df):
     series = sample_df["phone_number"].astype(dtype)
     invalid_row = pd.Series({4: "bad_phone"}, name="phone_number").astype(dtype)
 
-    if _is_spark_series(series):
-        invalid_row = ps.from_pandas(invalid_row)
-
     assert phone_number.validate(series) is None
 
-    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+    series = pd.concat([series, invalid_row]).astype(dtype)
 
     match = "Series phone_number contains invalid phone number values. "
     match += "The phone_inference_regex can be changed in the config if needed."
@@ -383,7 +308,7 @@ def test_phone_number_validate(sample_df):
 
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series({4: "bad_phone"}, name="phone_number").astype(dtype)
-    assert to_pandas(actual).equals(expected)
+    assert actual.equals(expected)
 
 
 def test_phone_number_validate_complex(sample_df_phone_numbers):
@@ -396,14 +321,14 @@ def test_phone_number_validate_complex(sample_df_phone_numbers):
         name="phone_number",
     ).astype(dtype)
 
-    series = concat_dataframe_or_series(series, invalid_row).astype(dtype)
+    series = pd.concat([series, invalid_row]).astype(dtype)
 
     actual = phone_number.validate(series, return_invalid_values=True)
     expected = pd.Series(
         {17: "252 9384", 18: "+1 194 129 1991", 19: "+01 236 248 8482"},
         name="phone_number",
     ).astype(dtype)
-    assert to_pandas(actual).equals(expected)
+    assert actual.equals(expected)
 
 
 def test_postal_code_validate(sample_df_postal_code):
@@ -417,7 +342,7 @@ def test_postal_code_validate(sample_df_postal_code):
         ],
     )
 
-    series = concat_dataframe_or_series(series, invalid_types)
+    series = pd.concat([series, invalid_types])
 
     series.name = "postal_code"
     match = "Series postal_code contains invalid postal code values. "
@@ -447,7 +372,7 @@ def test_postal_code_validate_complex(sample_df_postal_code):
     actual = pc.validate(series, return_invalid_values=True)
     assert not len(actual)
 
-    series = concat_dataframe_or_series(series, invalid_types)
+    series = pd.concat([series, invalid_types])
 
     actual = pc.validate(series, return_invalid_values=True)
     pd.testing.assert_series_equal(actual, invalid_types)
@@ -455,7 +380,7 @@ def test_postal_code_validate_complex(sample_df_postal_code):
 
 def test_postal_code_validate_numeric(postal_code_numeric_series):
     series = init_series(postal_code_numeric_series, logical_type=PostalCode())
-    actual = to_pandas(series.ww.validate_logical_type(return_invalid_values=True))
+    actual = series.ww.validate_logical_type(return_invalid_values=True)
     expected = pd.Series({5: "1234567890"})
 
     pd.testing.assert_series_equal(
@@ -467,10 +392,7 @@ def test_postal_code_validate_numeric(postal_code_numeric_series):
 
 
 def test_postal_code_error(postal_code_numeric_series_pandas):
-    series = concat_dataframe_or_series(
-        postal_code_numeric_series_pandas,
-        pd.Series([1234.5]),
-    )
+    series = pd.concat([postal_code_numeric_series_pandas, pd.Series([1234.5])])
     match = (
         "Error converting datatype for None from type float64 to type string. "
         "Please confirm the underlying data is consistent with logical type PostalCode."
@@ -874,52 +796,6 @@ def test_datetime_pivot_point_should_not_apply(delim):
     pd.testing.assert_frame_equal(df, df_expected)
 
 
-@pytest.mark.parametrize("type", ["pyspark", "dask"])
-def test_pyspark_dask_series(type):
-    dates = [
-        "01/01/24",
-        "01/01/28",
-        "01/01/30",
-        "01/01/32",
-        "01/01/36",
-        "01/01/40",
-        "01/01/72",
-        None,
-        "01/01/88",
-    ]
-    datetime_str = "%m/%d/%y"
-    expected_values = [
-        "2024-01-01",
-        "2028-01-01",
-        "2030-01-01",
-        "1932-01-01",
-        "1936-01-01",
-        "1940-01-01",
-        "1972-01-01",
-        None,
-        "1988-01-01",
-    ]
-    expected_values = get_expected_dates(expected_values)
-    df = pd.DataFrame({"dates": dates})
-    if type == "pyspark":
-        ps = pytest.importorskip(
-            "pyspark.pandas",
-            reason="Pyspark pandas not installed, skipping",
-        )
-        df = ps.from_pandas(df)
-    else:
-        dd = pytest.importorskip(
-            "dask.dataframe",
-            reason="Dask not installed, skipping",
-        )
-        df = dd.from_pandas(df, npartitions=2)
-    df.ww.init(logical_types={"dates": Datetime(datetime_format=datetime_str)})
-    df_expected = pd.DataFrame({"dates": expected_values}, dtype="datetime64[ns]")
-    df = to_pandas(df)
-    df.sort_index(inplace=True)
-    pd.testing.assert_frame_equal(df, df_expected)
-
-
 def test_datetime_pivot_point_no_format_provided():
     dates = [
         "01/01/24",
@@ -995,8 +871,7 @@ def test_datetime_formats_two_digit_years_ambiguous():
     pd.testing.assert_series_equal(series, series_expected)
 
 
-@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
-def test_boolean_other_values(df_type):
+def test_boolean_other_values():
     df = pd.DataFrame(
         {
             "bool2": ["t", "f", "t", "f", "t", "t"],
@@ -1007,18 +882,6 @@ def test_boolean_other_values(df_type):
             "bool9": ["N", "N", "n", "y", "Y", "y"],
         },
     )
-    if df_type == "spark":
-        ps = pytest.importorskip(
-            "pyspark.pandas",
-            reason="Pyspark pandas not installed, skipping",
-        )
-        df = ps.from_pandas(df)
-    elif df_type == "dask":
-        dd = pytest.importorskip(
-            "dask.dataframe",
-            reason="Dask not installed, skipping",
-        )
-        df = dd.from_pandas(df, npartitions=1)
     df.ww.init()
     assert all([str(dtype) == "Boolean" for dtype in df.ww.logical_types.values()])
 
@@ -1074,9 +937,8 @@ def test_boolean_with_null_error(series, null, cast_null):
         ]
 
 
-@pytest.mark.parametrize("df_type", ["pandas", "dask", "spark"])
 @pytest.mark.parametrize("null", [None, pd.NA, np.nan])
-def test_boolean_nullable_other_values_dont_cast(null, df_type):
+def test_boolean_nullable_other_values_dont_cast(null):
     df = pd.DataFrame(
         {
             "bool1": ["N", "N", "n", null, "Y", "y"],
@@ -1087,18 +949,6 @@ def test_boolean_nullable_other_values_dont_cast(null, df_type):
             "bool7": ["YES", "NO", "YES", "yes", null, "no"],
         },
     )
-    if df_type == "spark":
-        ps = pytest.importorskip(
-            "pyspark.pandas",
-            reason="Pyspark pandas not installed, skipping",
-        )
-        df = ps.from_pandas(df)
-    elif df_type == "dask":
-        dd = pytest.importorskip(
-            "dask.dataframe",
-            reason="Dask not installed, skipping",
-        )
-        df = dd.from_pandas(df, npartitions=1)
     df.ww.init()
     assert all(
         [str(dtype) == "BooleanNullable" for dtype in df.ww.logical_types.values()],
@@ -1205,12 +1055,6 @@ def test_object_dtype_inference(comprehensive_df):
     df_copy_objects.ww.init(
         logical_types={col: Unknown for col in df_copy_objects.columns},
     )
-    if _is_dask_dataframe(df_copy):
-        df_copy = df_copy.ww.compute()
-        df_copy_objects = df_copy_objects.ww.compute()
-    elif _is_spark_dataframe(df_copy):
-        df_copy = df_copy.ww.to_pandas()
-        df_copy_objects = df_copy_objects.ww.to_pandas()
     # Confirm proper Woodwork inference for pandas-inferred object columns
     assert {
         col: str(ltype) for col, ltype in df_copy.ww.logical_types.items()

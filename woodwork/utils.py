@@ -219,7 +219,7 @@ def _is_url(string):
     return "http" in string
 
 
-def _reformat_to_latlong(latlong, is_spark=False):
+def _reformat_to_latlong(latlong):
     """
     Accepts 2-tuple like values, or a single NaN like value.
     NaN like values are replaced with np.nan.
@@ -244,8 +244,6 @@ def _reformat_to_latlong(latlong, is_spark=False):
             )
 
         latlong = (latitude, longitude)
-        if is_spark:
-            latlong = list(latlong)
         return latlong
 
     if _is_nan(latlong):

@@ -3,12 +3,8 @@ import pandas as pd
 import pytest
 
 from woodwork.accessor_utils import (
-    _is_dask_dataframe,
-    _is_dask_series,
     _is_dataframe,
     _is_series,
-    _is_spark_dataframe,
-    _is_spark_series,
     get_invalid_schema_message,
     init_series,
     is_schema_valid,
@@ -18,10 +14,7 @@ from woodwork.logical_types import Categorical, Datetime, LatLong, NaturalLangua
 
 
 def test_init_series_valid_conversion_specified_ltype(sample_series):
-    if _is_spark_series(sample_series):
-        sample_series = sample_series.astype("str")
-    else:
-        sample_series = sample_series.astype("object")
+    sample_series = sample_series.astype("object")
 
     series = init_series(sample_series, logical_type="categorical")
     assert series is not sample_series
@@ -82,10 +75,7 @@ def test_init_series_with_multidimensional_np_array():
 
 
 def test_init_series_valid_conversion_inferred_ltype(sample_series):
-    if _is_spark_series(sample_series):
-        sample_series = sample_series.astype("str")
-    else:
-        sample_series = sample_series.astype("object")
+    sample_series = sample_series.astype("object")
 
     series = init_series(sample_series)
     assert series is not sample_series
@@ -109,10 +99,7 @@ def test_init_series_with_latlong(latlong_df):
 
 
 def test_init_series_all_parameters(sample_series):
-    if _is_spark_series(sample_series):
-        sample_series = sample_series.astype("str")
-    else:
-        sample_series = sample_series.astype("object")
+    sample_series = sample_series.astype("object")
 
     metadata = {"meta_key": "meta_value"}
     description = "custom description"
@@ -137,16 +124,6 @@ def test_init_series_all_parameters(sample_series):
 
 
 def test_init_series_error_on_invalid_conversion(sample_series):
-    if _is_dask_series(sample_series):
-        pytest.xfail(
-            "Dask type conversion with astype does not fail until compute is called",
-        )
-    if _is_spark_series(sample_series):
-        pytest.xfail(
-            "Spark allows this conversion, filling values it cannot convert with NaN "
-            "and converting dtype to float.",
-        )
-
     error_message = (
         "Error converting datatype for sample_series from type category to type Int64. "
         "Please confirm the underlying data is consistent with logical type IntegerNullable."
@@ -215,28 +192,23 @@ def test_get_invalid_schema_message_dtype_mismatch(sample_df):
         == "dtype mismatch for column is_registered between DataFrame dtype, Int64, and BooleanNullable dtype, boolean"
     )
 
-    # Spark backup dtypes make these checks not relevant
-    if not _is_spark_dataframe(sample_df):
-        incorrect_str_dtype_df = schema_df.ww.astype(
-            {"full_name": "object"},
-        )  # wont work for spark
-        incorrect_categorical_dtype_df = schema_df.ww.astype(
-            {"age": "string"},
-        )  # wont work for spark
-        assert (
-            get_invalid_schema_message(incorrect_str_dtype_df, schema)
-            == "dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string"
-        )
-        assert (
-            get_invalid_schema_message(incorrect_categorical_dtype_df, schema)
-            == "dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category"
-        )
+    incorrect_str_dtype_df = schema_df.ww.astype(
+        {"full_name": "object"},
+    )
+    incorrect_categorical_dtype_df = schema_df.ww.astype(
+        {"age": "string"},
+    )
+    assert (
+        get_invalid_schema_message(incorrect_str_dtype_df, schema)
+        == "dtype mismatch for column full_name between DataFrame dtype, object, and PersonFullName dtype, string"
+    )
+    assert (
+        get_invalid_schema_message(incorrect_categorical_dtype_df, schema)
+        == "dtype mismatch for column age between DataFrame dtype, string, and Categorical dtype, category"
+    )
 
 
 def test_get_invalid_schema_message_index_checks(sample_df):
-    if not isinstance(sample_df, pd.DataFrame):
-        pytest.xfail("Index validation not performed for Dask or Spark DataFrames")
-
     schema_df = sample_df.copy()
     schema_df.ww.init(
         name="test_schema",
@@ -293,23 +265,3 @@ def test_is_schema_valid_false(sample_df):
 
     missing_col_df = sample_df.drop(columns={"is_registered"})
     assert not is_schema_valid(missing_col_df, schema)
-
-
-def test_is_dask_dataframe(sample_df_dask):
-    assert _is_dask_dataframe(sample_df_dask)
-    assert not _is_dask_dataframe(pd.DataFrame())
-
-
-def test_is_dask_series(sample_series_dask):
-    assert _is_dask_series(sample_series_dask)
-    assert not _is_dask_series(pd.Series())
-
-
-def test_is_spark_dataframe(sample_df_spark):
-    assert _is_spark_dataframe(sample_df_spark)
-    assert not _is_dask_dataframe(pd.DataFrame())
-
-
-def test_is_spark_series(sample_series_spark):
-    assert _is_spark_series(sample_series_spark)
-    assert not _is_dask_series(pd.Series())

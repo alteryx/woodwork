@@ -4,14 +4,12 @@ from typing import Any, Callable, Dict, Sequence
 
 import pandas as pd
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import (
     Age,
     AgeNullable,
     Datetime,
     Integer,
     IntegerNullable,
-    LatLong,
     Unknown,
 )
 from woodwork.statistics_utils._get_histogram_values import _get_histogram_values
@@ -110,24 +108,6 @@ def _get_describe_dict(
 
     results = {}
 
-    if _is_dask_dataframe(dataframe):
-        df = dataframe.compute()
-    elif _is_spark_dataframe(dataframe):
-        df = dataframe.to_pandas()
-
-        # Any LatLong columns will be using lists, which we must convert
-        # back to tuples so we can calculate the mode, which requires hashable values
-        latlong_columns = [
-            col_name
-            for col_name, col in dataframe.ww.columns.items()
-            if type(col.logical_type) == LatLong
-        ]
-        df[latlong_columns] = df[latlong_columns].applymap(
-            lambda latlong: tuple(latlong) if latlong else latlong,
-        )
-    else:
-        df = dataframe
-
     # Setup for progress callback and make initial call
     # Assume 1 unit for general preprocessing, plus main loop over column
     total_loops = 1 + len(cols_to_include)
@@ -141,7 +121,7 @@ def _get_describe_dict(
         values = {}
         logical_type = column.logical_type
         semantic_tags = column.semantic_tags
-        series = df[column_name]
+        series = dataframe[column_name]
 
         agg_stats_to_calculate = {
             "category": ["count", "nunique"],
@@ -165,9 +145,6 @@ def _get_describe_dict(
             values = series.agg(agg_stats).to_dict()
 
         mode = _get_mode(series)
-        # The format of the mode should match its format in the DataFrame
-        if _is_spark_dataframe(dataframe) and series.name in latlong_columns:
-            mode = list(mode)
 
         if column.is_latlong:
             nan_count = series.apply(_is_latlong_nan).sum()

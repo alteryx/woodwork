@@ -1,4 +1,3 @@
-from woodwork.accessor_utils import _is_dask_dataframe
 from woodwork.serializers.serializer_base import (
     PYARROW_IMPORT_ERROR_MESSAGE,
     Serializer,
@@ -14,10 +13,6 @@ class OrcSerializer(Serializer):
 
     def serialize(self, dataframe, profile_name, **kwargs):
         import_or_raise("pyarrow", PYARROW_IMPORT_ERROR_MESSAGE)
-        # Serialization to orc relies on pyarrow.Table.from_pandas which doesn't work with Dask
-        if _is_dask_dataframe(dataframe):
-            msg = "DataFrame type not compatible with orc serialization. Please serialize to another format."
-            raise ValueError(msg)
         self.kwargs["engine"] = "pyarrow"
         return super().serialize(dataframe, profile_name, **kwargs)
 

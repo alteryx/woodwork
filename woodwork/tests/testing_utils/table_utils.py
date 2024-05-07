@@ -1,12 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from woodwork import accessor_utils
-from woodwork.utils import import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
-
 
 def validate_subset_schema(subset_schema, schema):
     assert subset_schema.name == schema.name
@@ -26,40 +20,6 @@ def dep_between_cols(col1, col2, dep_name, df):
         ]
 
     return dep_series.iloc[0]
-
-
-def to_pandas(df, index=None, sort_index=False, str_to_object=False):
-    """Testing util to convert dataframes to pandas. If a pandas dataframe is passed in, just returns the dataframe.
-
-    Args:
-        index sets the index, default = None
-        sort_index (bool) sort, default = False
-        str_to_object (bool) convert string to object for comparison, default = False
-
-
-    Returns:
-        Pandas DataFrame
-    """
-    if isinstance(df, (pd.DataFrame, pd.Series, pd.Index)):
-        return df
-
-    if dd and isinstance(df, (dd.DataFrame, dd.Series, dd.Index)):
-        pd_df = df.compute()
-
-    if ps and isinstance(df, (ps.DataFrame, ps.Series, ps.Index)):
-        pd_df = df.to_pandas()
-
-    if index:
-        pd_df = pd_df.set_index(index, drop=False)
-    if sort_index:
-        pd_df = pd_df.sort_index()
-
-    if str_to_object:
-        return pd_df.astype(
-            {col: "object" for col in pd_df.select_dtypes("string").columns},
-        )
-
-    return pd_df
 
 
 def is_public_method(class_to_check, name):
@@ -108,30 +68,3 @@ def _check_close(actual, expected):
         assert pd.isnull(actual)
     else:
         np.testing.assert_allclose(actual, expected, atol=1e-3)
-
-
-def concat_dataframe_or_series(base, to_add):
-    """Selects and calls the appropriate concat method based on the type of the base and to_add Series/DataFrame
-
-    Args:
-        base: base Series/DataFrame
-        to_add: Series/DataFrame to be concatenated
-
-    Returns:
-        Series/DataFrame: result of concatenation
-    """
-    dd = import_or_none("dask.dataframe")
-    ps = import_or_none("pyspark.pandas")
-
-    if isinstance(base, (pd.Series, pd.DataFrame)):
-        concatenated_obj = pd.concat([base, to_add])
-    elif accessor_utils._is_dask_dataframe(
-        base,
-    ) or accessor_utils._is_dask_series(base):
-        concatenated_obj = dd.concat([base, to_add])
-    elif accessor_utils._is_spark_dataframe(
-        base,
-    ) or accessor_utils._is_spark_series(base):
-        concatenated_obj = ps.concat([base, to_add])
-
-    return concatenated_obj

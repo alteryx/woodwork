@@ -297,13 +297,9 @@ def test_reformat_to_latlong_errors(test_input, error_msg):
         ("<NA>", np.nan),
     ],
 )
-@pytest.mark.parametrize("is_spark", [True, False])
-def test_reformat_to_latlong(test_input, expected, is_spark):
+def test_reformat_to_latlong(test_input, expected):
     if isinstance(expected, (list, tuple)):
-        if is_spark:
-            assert _reformat_to_latlong(test_input, is_spark) == list(expected)
-        else:
-            assert _reformat_to_latlong(test_input, is_spark) == expected
+        assert _reformat_to_latlong(test_input) == expected
     else:
         assert _reformat_to_latlong(test_input) is expected
 
@@ -365,30 +361,6 @@ def test_is_nan():
 )
 def test_is_valid_latlong_value(test_input, expected):
     assert _is_valid_latlong_value(test_input) == expected
-
-
-@pytest.mark.parametrize(
-    "test_input,expected",
-    [
-        ([1.0, 2.0], True),
-        ([1.0, np.nan], True),
-        ([np.nan, 2.0], True),
-        ([np.nan, np.nan], True),
-        (np.nan, True),
-        (None, True),
-        (pd.NA, False),
-        (2.0, False),
-        ([2.0], False),
-        ([None, None], True),
-        ("None", False),
-        ((1.0, 2.0), False),
-        ((pd.NA, pd.NA), False),
-        (("a", 2.0), False),
-        ((1.0, 2.0, 3.0), False),
-    ],
-)
-def test_is_valid_latlong_value_spark(test_input, expected):
-    assert _is_valid_latlong_value(test_input, is_spark=True) == expected
 
 
 def test_is_valid_latlong_series():

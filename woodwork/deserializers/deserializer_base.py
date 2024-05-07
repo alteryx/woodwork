@@ -11,7 +11,7 @@ import woodwork as ww
 from woodwork.exceptions import OutdatedSchemaWarning, UpgradeSchemaWarning
 from woodwork.s3_utils import get_transport_params, use_smartopen
 from woodwork.serializers.serializer_base import SCHEMA_VERSION
-from woodwork.utils import _is_s3, _is_url, import_or_raise
+from woodwork.utils import _is_s3, _is_url
 
 PYARROW_IMPORT_ERROR_MESSAGE_DESERIALIZE = (
     f"The pyarrow library is required to deserialize from {format}.\n"
@@ -93,7 +93,7 @@ class Deserializer:
                 else:
                     cat_object = pd.CategoricalDtype(pd.Series(cat_values))
                 col_type = cat_object
-            elif table_type == "spark" and col_type == "object":
+            elif col_type == "object":
                 col_type = "string"
             self.column_dtypes[col_name] = col_type
 
@@ -137,32 +137,6 @@ class Deserializer:
         raise NotImplementedError(
             "Must define read_from_local_path on Deserializer subclass",
         )  # pragma: no cover
-
-    def _get_library(self):
-        table_type = self.typing_info["loading_info"]["table_type"]
-        if table_type == "dask":
-            DASK_ERR_MSG = (
-                "Cannot load Dask DataFrame - unable to import Dask.\n\n"
-                "Please install with pip or conda:\n\n"
-                'python -m pip install "woodwork[dask]"\n\n'
-                "conda install dask"
-            )
-            lib = import_or_raise("dask.dataframe", DASK_ERR_MSG)
-        elif table_type == "spark":
-            SPARK_ERR_MSG = (
-                "Cannot load Spark DataFrame - unable to import Spark.\n\n"
-                "Please install with pip or conda:\n\n"
-                'python -m pip install "woodwork[spark]"\n\n'
-                "conda install spark\n\n"
-                "conda install pyspark"
-            )
-            lib = import_or_raise("pyspark.pandas", SPARK_ERR_MSG)
-            if "compression" in self.kwargs.keys():
-                self.kwargs["compression"] = str(self.kwargs["compression"])
-        else:
-            lib = pd
-
-        return lib
 
 
 def _check_schema_version(saved_version_str):
