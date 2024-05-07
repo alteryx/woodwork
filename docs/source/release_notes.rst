@@ -19,7 +19,7 @@ Future Release
 Breaking Changes
 ++++++++++++++++
 * With this release, Woodwork can no longer be used with Dask or Pyspark dataframes. The behavior when using pandas
-  dataframes to create EntitySets remains unchanged.
+  dataframes remains unchanged.
 
 v0.30.0 Apr 10, 2024
 ====================
