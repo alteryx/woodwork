@@ -69,6 +69,7 @@ docs = [
     "nbconvert == 6.5.0",
     "ipython == 8.4.0",
     "jupyter == 1.0.0",
+    "pyarrow >= 14.0.1",
 ]
 dev = [
     "ruff >= 0.1.6",

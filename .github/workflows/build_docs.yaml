@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python_version: ["3.9"]
+        python_version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -36,7 +36,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y pandoc
-          sudo apt install -y openjdk-11-jre-headless
           python -m pip install --upgrade pip
       - name: Install woodwork with doc dependencies (not using cache)
         if: steps.cache.outputs.cache-hit != 'true'
