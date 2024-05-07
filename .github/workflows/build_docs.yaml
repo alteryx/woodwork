@@ -10,7 +10,7 @@ env:
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   build_docs:
-    name: 3.9 build docs
+    name: ${{ matrix.python_version }} Build Docs
     runs-on: ubuntu-latest
     strategy:
       matrix:

@@ -11,7 +11,7 @@ env:
   ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
 jobs:
   unit_latest_tests:
-    name: ${{ matrix.python_version }} ${{ matrix.directories }} unit tests
+    name: ${{ matrix.python_version }} ${{ matrix.directories }} Unit Tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
