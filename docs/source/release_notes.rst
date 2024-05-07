@@ -9,7 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Add support for Python 3.12 :pr:`1855`
-        * Drop support for using Woodwork with Dask or Pyspark dataframes (:pr:`1875`)
+        * Drop support for using Woodwork with Dask or Pyspark dataframes (:pr:`1857`)
     * Documentation Changes
     * Testing Changes
 
