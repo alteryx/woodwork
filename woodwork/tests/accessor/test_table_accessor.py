@@ -482,12 +482,9 @@ def test_accessor_equality(sample_df):
     copy_df.ww.set_time_index("signup_date")
     assert schema_df.ww != copy_df.ww
 
-    # Confirm not equal with same schema but different data - only pandas
+    # Confirm not equal with same schema but different data
     loc_df = schema_df.ww.loc[:2, :]
-    if isinstance(sample_df, pd.DataFrame):
-        assert schema_df.ww != loc_df
-    else:
-        assert schema_df.ww == loc_df
+    assert schema_df.ww != loc_df
 
 
 def test_accessor_shallow_equality(sample_df):
@@ -510,8 +507,7 @@ def test_accessor_shallow_equality(sample_df):
     assert same_data_table.ww.__eq__(metadata_table.ww, deep=True)
 
     assert diff_data_table.ww.__eq__(metadata_table.ww, deep=False)
-    if isinstance(sample_df, pd.DataFrame):
-        assert not diff_data_table.ww.__eq__(metadata_table.ww, deep=True)
+    assert not diff_data_table.ww.__eq__(metadata_table.ww, deep=True)
 
 
 def test_accessor_init_with_valid_string_time_index(time_index_df):
@@ -2985,19 +2981,16 @@ def test_nan_index_error(sample_df):
 
 def test_validate_logical_types(sample_df):
     df = sample_df[["email", "url", "age"]]
-    if isinstance(df, pd.DataFrame):
-        df["ordinal"] = [18, 33, 33, 57]
-        df["latlong"] = [(1, 2), (3, 4), (5, 6), (8, 9)]
+    df["ordinal"] = [18, 33, 33, 57]
+    df["latlong"] = [(1, 2), (3, 4), (5, 6), (8, 9)]
 
-        df.ww.init(
-            logical_types={
-                "email": "EmailAddress",
-                "ordinal": Ordinal(order=[18, 44, 33, 57]),
-                "latlong": "Latlong",
-            },
-        )
-    else:
-        df.ww.init(logical_types={"email": "EmailAddress"})
+    df.ww.init(
+        logical_types={
+            "email": "EmailAddress",
+            "ordinal": Ordinal(order=[18, 44, 33, 57]),
+            "latlong": "Latlong",
+        },
+    )
     assert df.ww.validate_logical_types() is None
 
     invalid_df = pd.DataFrame(

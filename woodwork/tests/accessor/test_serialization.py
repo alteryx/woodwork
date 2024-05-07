@@ -335,24 +335,19 @@ def test_to_csv(sample_df, tmpdir):
 def test_to_disk_with_whitespace(whitespace_df, tmpdir, format):
     df = whitespace_df.copy()
     df.ww.init(index="id", logical_types={"comments": "NaturalLanguage"})
-    if format == "pickle" and not isinstance(df, pd.DataFrame):
-        msg = "DataFrame type not compatible with pickle serialization. Please serialize to another format."
-        with pytest.raises(ValueError, match=msg):
-            df.ww.to_disk(str(tmpdir), format="pickle")
+    df.ww.to_disk(str(tmpdir), format=format)
+    if format == "parquet":
+        filename = "data.parquet"
+        format = None
+        deserialized_df = read_woodwork_table(
+            path=str(tmpdir),
+            filename=filename,
+            format=format,
+        )
     else:
-        df.ww.to_disk(str(tmpdir), format=format)
-        if format == "parquet":
-            filename = "data.parquet"
-            format = None
-            deserialized_df = read_woodwork_table(
-                path=str(tmpdir),
-                filename=filename,
-                format=format,
-            )
-        else:
-            deserialized_df = read_woodwork_table(str(tmpdir))
-        assert deserialized_df.ww.schema == df.ww.schema
-        pd.testing.assert_frame_equal(deserialized_df, df)
+        deserialized_df = read_woodwork_table(str(tmpdir))
+    assert deserialized_df.ww.schema == df.ww.schema
+    pd.testing.assert_frame_equal(deserialized_df, df)
 
 
 def test_to_csv_use_standard_tags(sample_df, tmpdir):
@@ -607,10 +602,7 @@ def test_categorical_dtype_serialization(serialize_df, tmpdir):
         "cat_bool": Categorical,
         "ord_bool": Ordinal(order=[True, False]),
     }
-    if isinstance(serialize_df, pd.DataFrame):
-        formats = ["csv", "pickle", "parquet"]
-    else:
-        formats = ["csv"]
+    formats = ["csv", "pickle", "parquet"]
 
     for format in formats:
         df = serialize_df.copy()

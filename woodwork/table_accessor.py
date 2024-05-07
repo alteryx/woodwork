@@ -277,11 +277,7 @@ class WoodworkTableAccessor:
             return False
 
         # Only check pandas DataFrames for equality
-        if (
-            deep
-            and isinstance(self._dataframe, pd.DataFrame)
-            and isinstance(other.ww._dataframe, pd.DataFrame)
-        ):
+        if deep:
             return self._dataframe.equals(other.ww._dataframe)
         return True
 
@@ -710,9 +706,9 @@ class WoodworkTableAccessor:
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
         specified by the TableSchema. Does not change the underlying index if no Woodwork index is
-        specified. Only sets underlying index for pandas DataFrames.
+        specified.
         """
-        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
+        if self._schema.index is not None:
             self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
             # Drop index name to not overlap with the original column
             self._dataframe.index.name = None
@@ -1716,7 +1712,7 @@ def _check_index(dataframe, index):
         raise ColumnNotPresentError(
             f"Specified index column `{index}` not found in dataframe",
         )
-    if index is not None and isinstance(dataframe, pd.DataFrame):
+    if index is not None:
         # User specifies a dataframe index that is not unique or contains null values
         if not dataframe[index].is_unique:
             raise IndexError("Index column must be unique")
