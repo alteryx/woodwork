@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
@@ -12,7 +11,6 @@ from woodwork.logical_types import (
     Integer,
     IntegerNullable,
 )
-from woodwork.tests.testing_utils import to_pandas
 from woodwork.utils import concat_columns
 
 
@@ -54,13 +52,13 @@ def test_concat_cols_ww_dfs(sample_df):
     assert "test_tag" in combined_df.ww.semantic_tags["age"]
     assert combined_df.ww.metadata == {"created_by": "user0"}
 
-    pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)],
+    combined_df = pd.concat(
+        [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_uninit_dfs(sample_df):
@@ -102,13 +100,13 @@ def test_concat_cols_uninit_dfs(sample_df):
 
     df1.ww.init()
     df2.ww.init()
-    pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)],
+    combined_df = pd.concat(
+        [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_combo_dfs(sample_df):
@@ -145,13 +143,13 @@ def test_concat_cols_combo_dfs(sample_df):
 
     df1.ww.init()
     df2.ww.init()
-    pandas_combined_df = pd.concat(
-        [to_pandas(df1), to_pandas(df2)],
+    combined_df = pd.concat(
+        [df1, df2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_with_series(sample_df):
@@ -167,13 +165,13 @@ def test_concat_cols_with_series(sample_df):
     df.ww.init()
     s1.ww.init()
     s2.ww.init()
-    pandas_combined_df = pd.concat(
-        [to_pandas(df), to_pandas(s1), to_pandas(s2)],
+    combined_df = pd.concat(
+        [df, s1, s2],
         axis=1,
         join="outer",
         ignore_index=False,
     )
-    assert to_pandas(combined_df).equals(pandas_combined_df)
+    assert combined_df.equals(combined_df)
 
 
 def test_concat_cols_with_conflicting_ww_indexes(sample_df):
@@ -309,7 +307,7 @@ def test_concat_cols_with_duplicate_ww_indexes(sample_df):
     df2.ww.pop("signup_date")
 
     # Because underlying index is set, this won't change concat operation
-    pd.testing.assert_index_equal(to_pandas(df1.index), to_pandas(df2.index))
+    pd.testing.assert_index_equal(df1.index, df2.index)
 
     combined_df = concat_columns([df1, df2])
     assert combined_df.ww.index == "id"
@@ -403,10 +401,6 @@ def test_concat_cols_validate_schema(mock_validate_accessor_params, sample_df):
 
 
 def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
-    if _is_dask_dataframe(sample_df):
-        pytest.skip(
-            "Test is currently broken with Dask - can't perform concat operation in `concat_columns` - needs investigation",
-        )
     # If the dtype can handle nans, it won't change
     sample_df.ww.init(logical_types={"id": "IntegerNullable"})
 
@@ -417,12 +411,12 @@ def test_concat_cols_mismatched_index_adds_single_nan(sample_df):
     assert len(combined_df) == 4
 
 
-def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df_pandas):
+def test_concat_cols_mismatched_index_adds_multiple_nans(sample_df):
     # Only pandas checks for index uniqueness
-    sample_df_pandas.ww.init(index="id", logical_types={"id": "IntegerNullable"})
+    sample_df.ww.init(index="id", logical_types={"id": "IntegerNullable"})
 
-    df1 = sample_df_pandas.ww.loc[[0, 1], ["id", "full_name"]]
-    df2 = sample_df_pandas.ww.loc[[2, 3], ["signup_date", "email"]]
+    df1 = sample_df.ww.loc[[0, 1], ["id", "full_name"]]
+    df2 = sample_df.ww.loc[[2, 3], ["signup_date", "email"]]
 
     error = "Index column must be unique"
     with pytest.raises(IndexError, match=error):
@@ -490,7 +484,7 @@ def test_concat_cols_all_series(sample_df):
 
 def test_concat_cols_row_order(sample_df):
     sample_df.ww.init(index="id")
-    pd.testing.assert_index_equal(to_pandas(sample_df.index), pd.Index([0, 1, 2, 3]))
+    pd.testing.assert_index_equal(sample_df.index, pd.Index([0, 1, 2, 3]))
 
     df1 = sample_df.ww.loc[:, ["id", "full_name"]]
     df2 = sample_df.ww.loc[[2, 3, 0, 1], ["email", "phone_number"]]
@@ -516,14 +510,7 @@ def test_concat_cols_row_order(sample_df):
 
     assert sample_df.ww == combined_df.ww
 
-    # spark does not preserve index order in the same way
-    if _is_spark_dataframe(sample_df):
-        pd.testing.assert_index_equal(
-            to_pandas(combined_df.index),
-            pd.Index([0, 1, 2, 3]),
-        )
-    else:
-        pd.testing.assert_frame_equal(to_pandas(sample_df), to_pandas(combined_df))
+    pd.testing.assert_frame_equal(sample_df, combined_df)
 
 
 def test_concat_empty_list():
@@ -563,10 +550,6 @@ def test_concat_shorter_null_int(sample_df, nullable_type):
 
     # Purposefully create a dataframe with a non-nullable integer column
     # that's shorter than the one to concat with
-    if _is_dask_dataframe(sample_df):
-        pytest.skip(
-            "Slicing dataframe with respect to rows is not supported with Dask input",
-        )
     df2 = sample_df.ww[
         [
             nullable_type,

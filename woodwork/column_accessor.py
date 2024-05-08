@@ -22,10 +22,7 @@ from woodwork.indexers import _iLocIndexer, _locIndexer
 from woodwork.logical_types import _NULLABLE_PHYSICAL_TYPES, LatLong, Ordinal
 from woodwork.statistics_utils import _get_box_plot_info_for_column
 from woodwork.table_schema import TableSchema
-from woodwork.utils import _get_column_logical_type, import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
+from woodwork.utils import _get_column_logical_type
 
 
 class WoodworkColumnAccessor:
@@ -580,18 +577,3 @@ def _validate_schema(schema, series):
 @pd.api.extensions.register_series_accessor("ww")
 class PandasColumnAccessor(WoodworkColumnAccessor):
     pass
-
-
-if dd:
-
-    @dd.extensions.register_series_accessor("ww")
-    class DaskColumnAccessor(WoodworkColumnAccessor):
-        pass
-
-
-if ps:
-    from pyspark.pandas.extensions import register_series_accessor
-
-    @register_series_accessor("ww")
-    class SparkColumnAccessor(WoodworkColumnAccessor):
-        pass

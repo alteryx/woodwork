@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 
 from woodwork.exceptions import ColumnNotPresentInSchemaError, WoodworkNotInitError
-from woodwork.utils import _get_column_logical_type, import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
+from woodwork.utils import _get_column_logical_type
 
 
 def init_series(
@@ -75,19 +72,11 @@ def init_series(
 def _is_series(data):
     if isinstance(data, pd.Series):
         return True
-    elif _is_dask_series(data):
-        return True
-    elif _is_spark_series(data):
-        return True
     return False
 
 
 def _is_dataframe(data):
     if isinstance(data, pd.DataFrame):
-        return True
-    elif _is_dask_dataframe(data):
-        return True
-    elif _is_spark_dataframe(data):
         return True
     return False
 
@@ -128,8 +117,7 @@ def get_invalid_schema_message(dataframe, schema):
                 f"dtype mismatch for column {name} between DataFrame dtype, "
                 f"{df_dtype}, and {logical_types[name]} dtype, {valid_dtype}"
             )
-    if schema.index is not None and isinstance(dataframe, pd.DataFrame):
-        # Index validation not performed for Dask/Spark
+    if schema.index is not None:
         if not pd.Series(dataframe.index, dtype=dataframe[schema.index].dtype).equals(
             pd.Series(dataframe[schema.index].values),
         ):
@@ -155,30 +143,6 @@ def is_schema_valid(dataframe, schema):
     if invalid_schema_message:
         return False
     return True
-
-
-def _is_dask_series(data):
-    if dd and isinstance(data, dd.Series):
-        return True
-    return False
-
-
-def _is_dask_dataframe(data):
-    if dd and isinstance(data, dd.DataFrame):
-        return True
-    return False
-
-
-def _is_spark_dataframe(data):
-    if ps and isinstance(data, ps.DataFrame):
-        return True
-    return False
-
-
-def _is_spark_series(data):
-    if ps and isinstance(data, ps.Series):
-        return True
-    return False
 
 
 def _check_column_schema(method):

@@ -1,7 +1,6 @@
 import glob
 import os
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.exceptions import WoodworkFileExistsError
 from woodwork.serializers.serializer_base import Serializer
 
@@ -21,24 +20,13 @@ class CSVSerializer(Serializer):
         }
 
     def serialize(self, dataframe, profile_name, **kwargs):
-        if _is_spark_dataframe(dataframe):
-            if self.filename is not None:
-                raise ValueError(
-                    "Writing a Spark dataframe to csv with a filename specified is not supported",
-                )
-            self.default_kwargs["multiline"] = True
-            self.default_kwargs["ignoreLeadingWhitespace"] = False
-            self.default_kwargs["ignoreTrailingWhitespace"] = False
         self.kwargs = {**self.default_kwargs, **kwargs}
         return super().serialize(dataframe, profile_name, **kwargs)
 
     def _get_filename(self):
         if self.filename is None:
             ww_name = self.dataframe.ww.name or "data"
-            if _is_dask_dataframe(self.dataframe):
-                basename = "{}-*.{}".format(ww_name, self.format)
-            else:
-                basename = ".".join([ww_name, self.format])
+            basename = ".".join([ww_name, self.format])
         else:
             basename = self.filename
         self.location = basename
@@ -56,12 +44,6 @@ class CSVSerializer(Serializer):
         # engine kwarg not needed for writing, only reading
         if "engine" in csv_kwargs.keys():
             del csv_kwargs["engine"]
-        if _is_spark_dataframe(self.dataframe):
-            dataframe = self.dataframe.ww.copy()
-            columns = list(dataframe.select_dtypes("object").columns)
-            dataframe[columns] = dataframe[columns].astype(str)
-            csv_kwargs["compression"] = str(csv_kwargs["compression"])
-        else:
-            dataframe = self.dataframe
+        dataframe = self.dataframe
         file = self._get_filename()
         dataframe.to_csv(file, **csv_kwargs)

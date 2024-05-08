@@ -9,11 +9,17 @@ Future Release
     * Fixes
     * Changes
         * Add support for Python 3.12 :pr:`1855`
+        * Drop support for using Woodwork with Dask or Pyspark dataframes (:pr:`1857`)
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`thehomebrewnerd`
+
+Breaking Changes
+++++++++++++++++
+* With this release, Woodwork can no longer be used with Dask or Pyspark dataframes. The behavior when using pandas
+  dataframes remains unchanged.
 
 v0.30.0 Apr 10, 2024
 ====================

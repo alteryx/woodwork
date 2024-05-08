@@ -2,19 +2,12 @@ import pandas as pd
 from dateutil.parser import ParserError
 
 import woodwork as ww
-from woodwork.accessor_utils import _is_dask_series, _is_spark_series
-from woodwork.utils import import_or_none
-
-ps = import_or_none("pyspark.pandas")
-dd = import_or_none("dask.dataframe")
 
 
 def col_is_datetime(col, datetime_format=None):
     """Determine if a dataframe column contains datetime values or not. Returns True if column
     contains datetimes, False if not. Optionally specify the datetime format string for the column.
     Will not infer numeric data as datetime."""
-    if _is_spark_series(col):
-        col = col.to_pandas()
 
     if pd.api.types.is_datetime64_any_dtype(col):
         return True
@@ -51,11 +44,6 @@ def col_is_datetime(col, datetime_format=None):
 def _is_numeric_series(series, logical_type):
     """Determines whether a series will be considered numeric
     for the purposes of determining if it can be a time_index."""
-    if _is_spark_series(series):
-        series = series.to_pandas()
-    if _is_dask_series(series):
-        series = series.get_partition(0).compute()
-
     # If column can't be made to be numeric, don't bother checking Logical Type
     try:
         pd.to_numeric(series, errors="raise")

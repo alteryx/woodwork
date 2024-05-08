@@ -29,22 +29,6 @@ jobs:
           paths: 'pyproject.toml'
           options: 'dependencies'
           output_filepath: 'woodwork/tests/requirement_files/minimum_core_requirements.txt'
-      - name: Run min dep generator - core + spark reqs
-        id: min_dep_gen_spark
-        uses: alteryx/minimum-dependency-generator@v3
-        with:
-          paths: 'pyproject.toml'
-          options: 'dependencies'
-          extras_require: 'spark'
-          output_filepath: 'woodwork/tests/requirement_files/minimum_spark_requirements.txt'
-      - name: Run min dep generator - core + dask
-        id: min_dep_gen_dask
-        uses: alteryx/minimum-dependency-generator@v3
-        with:
-          paths: 'pyproject.toml'
-          options: 'dependencies'
-          extras_require: 'dask'
-          output_filepath: 'woodwork/tests/requirement_files/minimum_dask_requirements.txt'
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:

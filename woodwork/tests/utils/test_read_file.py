@@ -9,9 +9,9 @@ from woodwork.logical_types import _replace_nans
 from woodwork.serializers.orc_serializer import save_orc_file
 
 
-def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
+def test_read_file_errors_no_content_type(sample_df, tmpdir):
     filepath = os.path.join(tmpdir, "sample")
-    sample_df_pandas.to_csv(filepath, index=False)
+    sample_df.to_csv(filepath, index=False)
 
     no_type_error = (
         "Content type could not be inferred. Please specify content_type and try again."
@@ -20,9 +20,9 @@ def test_read_file_errors_no_content_type(sample_df_pandas, tmpdir):
         ww.read_file(filepath=filepath)
 
 
-def test_read_file_errors_unsupported(sample_df_pandas, tmpdir):
+def test_read_file_errors_unsupported(sample_df, tmpdir):
     filepath = os.path.join(tmpdir, "sample")
-    sample_df_pandas.to_feather(filepath)
+    sample_df.to_feather(filepath)
 
     content_type = "notacontenttype"
     not_supported_error = (
@@ -35,11 +35,11 @@ def test_read_file_errors_unsupported(sample_df_pandas, tmpdir):
 @patch("woodwork.table_accessor._validate_accessor_params")
 def test_read_file_validation_control(
     mock_validate_accessor_params,
-    sample_df_pandas,
+    sample_df,
     tmpdir,
 ):
     filepath = os.path.join(tmpdir, "sample.csv")
-    sample_df_pandas.to_csv(filepath, index=False)
+    sample_df.to_csv(filepath, index=False)
 
     assert not mock_validate_accessor_params.called
     ww.read_file(filepath=filepath, validate=False)
@@ -150,7 +150,7 @@ def test_read_file_validation_control(
     ],
 )
 def test_read_file(
-    sample_df_pandas,
+    sample_df,
     tmpdir,
     filepath,
     exportfn,
@@ -160,17 +160,17 @@ def test_read_file(
     filepath = os.path.join(tmpdir, filepath)
     func, func_kwargs = exportfn
     if isinstance(func, str):
-        getattr(sample_df_pandas, func)(filepath, **func_kwargs)
+        getattr(sample_df, func)(filepath, **func_kwargs)
     else:
         # Call save_orc_file to save orc data since pandas does not have a to_orc method
-        func(sample_df_pandas, filepath, **func_kwargs)
+        func(sample_df, filepath, **func_kwargs)
     df = ww.read_file(filepath=filepath, **kwargs)
     assert isinstance(df.ww.schema, ww.table_schema.TableSchema)
 
-    schema_df = sample_df_pandas.copy()
+    schema_df = sample_df.copy()
     if pandas_nullable_fix:
         # pandas does not read data into nullable types currently from csv or orc,
-        # so the types in df will be different than the types inferred from sample_df_pandas
+        # so the types in df will be different than the types inferred from sample_df
         # which uses the nullable types
         schema_df = schema_df.astype(
             {

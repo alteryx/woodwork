@@ -27,25 +27,6 @@ jobs:
         python -m pip install .[test]
         make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_core_dependencies.txt
         cat woodwork/tests/requirement_files/latest_core_dependencies.txt
-    - name: Update latest spark dependencies
-      run: |
-        python -m virtualenv venv_spark
-        source venv_spark/bin/activate
-        python -m pip install --upgrade pip
-        python -m pip install .[spark,test]
-        make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_spark_dependencies.txt
-        cat woodwork/tests/requirement_files/latest_spark_dependencies.txt
-    - name: Update latest dask dependencies
-      run: |
-        python -m virtualenv venv_dask
-        source venv_dask/bin/activate
-        python -m pip install --upgrade pip
-        python -m pip install .[test,dask]
-        make checkdeps OUTPUT_FILEPATH=woodwork/tests/requirement_files/latest_dask_dependencies.txt
-        cat woodwork/tests/requirement_files/latest_dask_dependencies.txt
-        python -m pip install .[dev]
-        make lint-fix
-        pre-commit autoupdate
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v3
       with:

@@ -44,7 +44,7 @@ def read_woodwork_table(
         typing_info_filename (str, optional): The name of the JSON file used to store the Woodwork typing information during
             serialization. Defaults to "woodwork_typing_info.json".
         format (str, optional): The format used to serialize the data. Required if the serialized filename suffix does not
-            match the format or when deserializing from parquet files into Dask or Spark dataframes.
+            match the format.
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
             Set to False to use an anonymous profile.
         validate (bool, optional): Whether parameter and data validation should occur when initializing Woodwork dataframe

@@ -4,7 +4,6 @@ import os
 import tarfile
 import tempfile
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.exceptions import WoodworkFileExistsError
 from woodwork.logical_types import LatLong
 from woodwork.s3_utils import get_transport_params, use_smartopen
@@ -146,14 +145,6 @@ def typing_info_to_dict(dataframe):
     Returns:
         dict: Dictionary containing Woodwork typing information
     """
-    if _is_dask_dataframe(dataframe):
-        # Need to determine the category info for Dask it can be saved below
-        category_cols = [
-            colname
-            for colname, col in dataframe.ww._schema.columns.items()
-            if col.is_categorical
-        ]
-        dataframe = dataframe.ww.categorize(columns=category_cols)
     ordered_columns = dataframe.columns
 
     def _get_physical_type_dict(column):
@@ -181,12 +172,7 @@ def typing_info_to_dict(dataframe):
         for col_name, col in dataframe.ww.columns.items()
     ]
 
-    if _is_dask_dataframe(dataframe):
-        table_type = "dask"
-    elif _is_spark_dataframe(dataframe):
-        table_type = "spark"
-    else:
-        table_type = "pandas"
+    table_type = "pandas"
 
     return {
         "schema_version": SCHEMA_VERSION,

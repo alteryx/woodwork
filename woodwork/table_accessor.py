@@ -7,9 +7,7 @@ import pandas as pd
 
 from woodwork.accessor_utils import (
     _check_table_schema,
-    _is_dask_dataframe,
     _is_dataframe,
-    _is_spark_dataframe,
     get_invalid_schema_message,
     init_series,
 )
@@ -35,10 +33,7 @@ from woodwork.statistics_utils import (
 from woodwork.table_schema import TableSchema
 from woodwork.type_sys.utils import _is_numeric_series, col_is_datetime
 from woodwork.typing import AnyDataFrame, ColumnName, UseStandardTagsDict
-from woodwork.utils import _get_column_logical_type, _parse_logical_type, import_or_none
-
-dd = import_or_none("dask.dataframe")
-ps = import_or_none("pyspark.pandas")
+from woodwork.utils import _get_column_logical_type, _parse_logical_type
 
 
 class WoodworkTableAccessor:
@@ -282,11 +277,7 @@ class WoodworkTableAccessor:
             return False
 
         # Only check pandas DataFrames for equality
-        if (
-            deep
-            and isinstance(self._dataframe, pd.DataFrame)
-            and isinstance(other.ww._dataframe, pd.DataFrame)
-        ):
+        if deep:
             return self._dataframe.equals(other.ww._dataframe)
         return True
 
@@ -324,8 +315,7 @@ class WoodworkTableAccessor:
         return series
 
     def __setitem__(self, col_name, column):
-        series = tuple(pkg.Series for pkg in (pd, dd, ps) if pkg)
-        if not isinstance(column, series):
+        if not isinstance(column, pd.Series):
             raise ValueError("New column must be of Series type")
 
         if column.ww.schema is not None and "index" in column.ww.semantic_tags:
@@ -707,8 +697,6 @@ class WoodworkTableAccessor:
         )
 
     def _sort_columns(self, already_sorted):
-        if _is_dask_dataframe(self._dataframe) or _is_spark_dataframe(self._dataframe):
-            already_sorted = True  # Skip sorting for Dask and Spark input
         if not already_sorted:
             sort_cols = [self._schema.time_index, self._schema.index]
             if self._schema.index is None:
@@ -718,9 +706,9 @@ class WoodworkTableAccessor:
     def _set_underlying_index(self):
         """Sets the index of the underlying DataFrame to match the index column as
         specified by the TableSchema. Does not change the underlying index if no Woodwork index is
-        specified. Only sets underlying index for pandas DataFrames.
+        specified.
         """
-        if isinstance(self._dataframe, pd.DataFrame) and self._schema.index is not None:
+        if self._schema.index is not None:
             self._dataframe.set_index(self._schema.index, drop=False, inplace=True)
             # Drop index name to not overlap with the original column
             self._dataframe.index.name = None
@@ -801,12 +789,6 @@ class WoodworkTableAccessor:
         """Creates a new DataFrame from a list of column names with Woodwork initialized,
         retaining all typing information and maintaining the DataFrame's column order.
         """
-        if inplace:
-            if _is_dask_dataframe(self._dataframe):
-                raise ValueError("Drop inplace not supported for Dask")
-            if _is_spark_dataframe(self._dataframe):
-                raise ValueError("Drop inplace not supported for Spark")
-
         assert all([col_name in self._schema.columns for col_name in cols_to_include])
 
         new_schema = self._schema.get_subset_schema(cols_to_include)
@@ -888,10 +870,6 @@ class WoodworkTableAccessor:
 
         new_schema = self._schema.rename(columns)
         if inplace:
-            if _is_dask_dataframe(self._dataframe):
-                raise ValueError("Rename inplace not supported for Dask")
-            if _is_spark_dataframe(self._dataframe):
-                raise ValueError("Rename inplace not supported for Spark")
             self._dataframe.rename(columns=columns, inplace=True)
             self.init_with_full_schema(schema=new_schema)
             return
@@ -1614,7 +1592,6 @@ class WoodworkTableAccessor:
     def infer_temporal_frequencies(self, temporal_columns=None, debug=False):
         """Infers the observation frequency (daily, biweekly, yearly, etc) of each temporal column
             in the DataFrame. Temporal columns are ones with the logical type Datetime or Timedelta.
-            Not supported for Dask and Spark DataFrames.
 
         Args:
             temporal_columns (list[str], optional): Columns for which frequencies should be inferred. Must be columns
@@ -1682,11 +1659,6 @@ class WoodworkTableAccessor:
 
         if return_invalid_values and invalid_values:
             concat = pd.concat
-            if _is_dask_dataframe(self._dataframe):
-                concat = dd.concat
-            if _is_spark_dataframe(self._dataframe):
-                concat = ps.concat
-
             return concat(invalid_values, axis=1)
 
 
@@ -1740,9 +1712,8 @@ def _check_index(dataframe, index):
         raise ColumnNotPresentError(
             f"Specified index column `{index}` not found in dataframe",
         )
-    if index is not None and isinstance(dataframe, pd.DataFrame):
+    if index is not None:
         # User specifies a dataframe index that is not unique or contains null values
-        # Does not check Dask dataframes to avoid pulling data into memory and Dask does not support is_unique
         if not dataframe[index].is_unique:
             raise IndexError("Index column must be unique")
 
@@ -1861,12 +1832,8 @@ def _infer_missing_logical_types(
             null_invalid_values=null_invalid_values,
         )
         if updated_series is not series:
-            # NotImplementedError thrown by dask when attempting to re-initialize
-            # data after being assigned a numeric column name
-            try:
-                dataframe[name] = updated_series
-            except NotImplementedError:
-                pass
+            dataframe[name] = updated_series
+
     return parsed_logical_types
 
 
@@ -1897,21 +1864,3 @@ def _merge_use_standard_tags(
 @pd.api.extensions.register_dataframe_accessor("ww")
 class PandasTableAccessor(WoodworkTableAccessor):
     pass
-
-
-if dd:
-
-    @dd.extensions.register_dataframe_accessor("ww")
-    class DaskTableAccessor(WoodworkTableAccessor):
-        pass
-
-
-if ps:
-    from pyspark.pandas.extensions import register_dataframe_accessor
-
-    @register_dataframe_accessor("ww")
-    class SparkTableAccessor(WoodworkTableAccessor):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            if not ps.get_option("compute.ops_on_diff_frames"):
-                ps.set_option("compute.ops_on_diff_frames", True)

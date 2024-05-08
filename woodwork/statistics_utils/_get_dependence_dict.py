@@ -4,7 +4,6 @@ from timeit import default_timer as timer
 
 import numpy as np
 
-from woodwork.accessor_utils import _is_dask_dataframe, _is_spark_dataframe
 from woodwork.statistics_utils._bin_numeric_cols_into_categories import (
     _bin_numeric_cols_into_categories,
 )
@@ -162,10 +161,6 @@ def _get_dependence_dict(
 
     data = dataframe_with_bools_to_int.loc[:, valid_columns]
     # cut off data if necessary
-    if _is_dask_dataframe(data):
-        data = data.compute()
-    elif _is_spark_dataframe(dataframe_with_bools_to_int):
-        data = data.to_pandas()
     if nrows is not None and nrows < data.shape[0]:
         data = data.sample(nrows, random_state=random_seed)
 
@@ -291,19 +286,14 @@ def _find_large_categorical_columns(datatable, total_unique=6000):
         total = sum(df_uniques.to_numpy())
         if total > total_unique:
             # try to use mergesort to keep the order of the columns
-            if not _is_spark_dataframe(df):
-                drop = df_uniques.sort_values(ascending=False, kind="mergesort").index[
-                    0
-                ]
-            else:
-                drop = df_uniques.sort_values(ascending=False).index.tolist()[0]
+            drop = df_uniques.sort_values(ascending=False, kind="mergesort").index[0]
             cols_to_drop.append(drop)
             df = df.drop(cols_to_drop, axis=1)
             cols_to_drop += categorical_column_drop_helper(df)
         return cols_to_drop
 
     categoricals = datatable.ww.select("category").columns
-    # dask dataframe does not have support for `nunique`, but it should be a feature coming in a future release
-    if len(categoricals) and not _is_dask_dataframe(datatable):
+
+    if len(categoricals):
         return categorical_column_drop_helper(datatable[categoricals])
     return []
