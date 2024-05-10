@@ -2,6 +2,7 @@ import os
 import tarfile
 import tempfile
 import warnings
+from inspect import getfullargspec
 from itertools import zip_longest
 from pathlib import Path
 
@@ -125,7 +126,12 @@ class Deserializer:
 
             use_smartopen(tar_filepath, self.path, transport_params)
             with tarfile.open(str(tar_filepath)) as tar:
-                tar.extractall(path=tmpdir)
+                if "filter" in getfullargspec(tar.extractall).kwonlyargs:
+                    tar.extractall(path=tmpdir, filter="data")
+                else:
+                    raise RuntimeError(
+                        "Please upgrade your Python version to the latest patch release to allow for safe extraction of the EntitySet archive.",
+                    )
             self.read_path = os.path.join(
                 tmpdir,
                 self.typing_info["loading_info"]["location"],

@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import tempfile
+from inspect import getfullargspec
 from pathlib import Path
 
 from woodwork.deserializers import (
@@ -99,7 +100,12 @@ def read_table_typing_information(path, typing_info_filename, profile_name):
 
             use_smartopen(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
-                tar.extractall(path=tmpdir)
+                if "filter" in getfullargspec(tar.extractall).kwonlyargs:
+                    tar.extractall(path=tmpdir, filter="data")
+                else:
+                    raise RuntimeError(
+                        "Please upgrade your Python version to the latest patch release to allow for safe extraction of the EntitySet archive.",
+                    )
 
             file = os.path.join(tmpdir, typing_info_filename)
             with open(file, "r") as file:

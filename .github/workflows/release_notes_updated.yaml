@@ -12,6 +12,7 @@ jobs:
       - name: Check for development branch
         id: branch
         shell: python
+
         run: |
           from re import compile
           main = '^main$'
