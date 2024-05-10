@@ -100,9 +100,6 @@ def read_table_typing_information(path, typing_info_filename, profile_name):
 
             use_smartopen(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
-                import pdb
-
-                pdb.set_trace()
                 if "filter" in getfullargspec(tar.extractall).kwonlyargs:
                     tar.extractall(path=tmpdir, filter="data")
                 else:

@@ -662,7 +662,7 @@ def test_to_csv_S3(sample_df, s3_client, s3_bucket, profile_name):
     assert sample_df.ww.schema == deserialized_df.ww.schema
 
 
-@patch("woodwork.deserializers.deserializer_base.getfullargspec")
+@patch("woodwork.deserializers.utils.getfullargspec")
 def test_to_csv_S3_errors_if_python_version_unsafe(
     mock_inspect,
     sample_df,
@@ -700,6 +700,23 @@ def test_serialize_s3_pickle(sample_df, s3_client, s3_bucket, profile_name):
 
     pd.testing.assert_frame_equal(sample_df, deserialized_df)
     assert sample_df.ww.schema == deserialized_df.ww.schema
+
+
+@patch("woodwork.deserializers.deserializer_base.getfullargspec")
+def test_serialize_s3_pickle_errors_if_python_version_unsafe(
+    mock_inspect,
+    sample_df,
+    s3_client,
+    s3_bucket,
+):
+    mock_response = MagicMock()
+    mock_response.kwonlyargs = []
+    mock_inspect.return_value = mock_response
+    sample_df.ww.init()
+    sample_df.ww.to_disk(TEST_S3_URL, format="pickle", profile_name=None)
+    make_public(s3_client, s3_bucket)
+    with pytest.raises(RuntimeError, match="Please upgrade your Python version"):
+        read_woodwork_table(TEST_S3_URL, profile_name=None)
 
 
 @pytest.mark.parametrize("profile_name", [None, False])
