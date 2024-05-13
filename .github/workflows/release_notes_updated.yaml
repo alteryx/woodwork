@@ -23,8 +23,7 @@ jobs:
           min_dep_update = '^min-dep-update-[a-f0-9]{7}$'
           regex = main, release, backport, dep_update, min_dep_update
           patterns = list(map(compile, regex))
-          ref = "$REF"
-          is_dev = not any(pattern.match(ref) for pattern in patterns)
+          is_dev = not any(pattern.match($REF) for pattern in patterns)
           print('::set-output name=is_dev::' + str(is_dev))
       - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Checkout repository
