@@ -1,4 +1,4 @@
 numpy==1.26.4
 pandas==2.2.2
 pyarrow==16.1.0
-scikit-learn==1.4.2
+scikit-learn==1.5.0
