@@ -35,7 +35,7 @@ dependencies = [
     "python-dateutil >= 2.8.2",
     "scipy >= 1.10.0",
     "importlib-resources >= 5.10.0",
-    "numpy >= 1.25.0",
+    "numpy >= 1.25.0, < 2.0.0",
 ]
 
 [project.urls]
