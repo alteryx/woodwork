@@ -9,6 +9,7 @@ Future Release
     * Fixes
     * Changes
         * Restrict numpy to <2.0.0 :pr:`1869`
+        * Replace deprecated setuptools `pkg_resources` usages with `importlib`
     * Documentation Changes
     * Testing Changes
 
