@@ -1,7 +1,7 @@
 # flake8: noqa
-import pkg_resources
 import sys
 import warnings
+from importlib.metadata import entry_points
 
 from woodwork.config import config
 from woodwork.type_sys import type_system
@@ -25,8 +25,8 @@ if sys.version_info.major == 3 and sys.version_info.minor == 7:  # pragma: no co
     )
 
 # Call functions registered by other libraries when woodwork is imported
-for entry_point in pkg_resources.iter_entry_points(
-    "alteryx_open_src_initialize",
+for entry_point in entry_points(
+    group="alteryx_open_src_initialize",
 ):  # pragma: no cover
     try:
         method = entry_point.load()
